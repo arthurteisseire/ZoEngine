@@ -1,0 +1,30 @@
+cmake_minimum_required(VERSION 3.26)
+project(ZoEngine)
+
+set(CMAKE_CXX_STANDARD 20)
+
+find_package(Vulkan REQUIRED)
+#find_package(GLFW3 REQUIRED)
+
+
+# Define the executable
+add_executable(ZoEngine
+        src/main.cpp
+        src/tools/Logger.cpp
+        src/window/Window.cpp
+)
+
+# Include Vulkan header directories
+target_include_directories(ZoEngine PRIVATE
+        ${Vulkan_INCLUDE_DIRS}
+        /nix/store/ydcip4il6dac1bahk887liw35z5bknyv-glfw-3.3.8/include
+        /nix/store/ydcip4il6dac1bahk887liw35z5bknyv-glfw-3.3.8/lib
+        ${CMAKE_CURRENT_SOURCE_DIR}/src
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/tools
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/window
+)
+
+target_link_libraries(ZoEngine PRIVATE
+        ${Vulkan_LIBRARIES}
+        glfw
+)
