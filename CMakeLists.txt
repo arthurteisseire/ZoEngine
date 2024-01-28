@@ -17,8 +17,8 @@ add_executable(ZoEngine
 # Include Vulkan header directories
 target_include_directories(ZoEngine PRIVATE
         ${Vulkan_INCLUDE_DIRS}
-        /nix/store/ydcip4il6dac1bahk887liw35z5bknyv-glfw-3.3.8/include
-        /nix/store/ydcip4il6dac1bahk887liw35z5bknyv-glfw-3.3.8/lib
+        $ENV{GLFW_INCLUDE_DIR}
+        $ENV{GLFW_LIBRARY_DIR}
         ${CMAKE_CURRENT_SOURCE_DIR}/src
         ${CMAKE_CURRENT_SOURCE_DIR}/src/tools
         ${CMAKE_CURRENT_SOURCE_DIR}/src/window
