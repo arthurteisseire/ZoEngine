@@ -1,16 +1,28 @@
 #ifndef ENGINE_WINDOW_H
 #define ENGINE_WINDOW_H
 
+#include <vulkan/vulkan.hpp>
+
+#define GGLFW_INCLUDE_VULKAN
+
 #include <GLFW/glfw3.h>
 
-class Window {
+class Window
+{
 public:
-    bool init(unsigned int width, unsigned int height, std::string title);
+    // Glfw
+    bool init(unsigned int width, unsigned int height, const std::string &title);
     void mainLoop();
     void cleanup();
 
+    // Vulkan
+    bool initVulkan();
 private:
     GLFWwindow *m_window = nullptr;
+
+    std::string m_applicationName;
+    vk::Instance m_instance{};
+    vk::SurfaceKHR m_surface{};
 };
 
 #endif //ENGINE_WINDOW_H
