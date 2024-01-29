@@ -49,6 +49,12 @@ bool Window::init(unsigned int width, unsigned int height, const std::string &ti
         auto thisWindow = static_cast<Window *>(glfwGetWindowUserPointer(window));
         thisWindow->handleWindowCloseEvents();
     });
+
+    glfwSetWindowUserPointer(m_window, this);
+    glfwSetKeyCallback(m_window, [](GLFWwindow *window, int key, int scancode, int action, int mods) {
+        auto thisWindow = static_cast<Window *>(glfwGetWindowUserPointer(window));
+        thisWindow->handleKeyEvents(key, scancode, action, mods);
+    });
     return true;
 }
 
@@ -66,11 +72,6 @@ void Window::cleanup()
     m_instance.destroySurfaceKHR(m_surface, nullptr);
     glfwDestroyWindow(m_window);
     glfwTerminate();
-}
-
-void Window::handleWindowCloseEvents()
-{
-    Logger::info("%s: Window closed successfully.\n", __FUNCTION__);
 }
 
 bool Window::initVulkan()
@@ -136,4 +137,34 @@ bool Window::initVulkan()
     m_surface = vk::SurfaceKHR(surface);
 
     return true;
+}
+
+void Window::handleWindowCloseEvents()
+{
+    Logger::info("%s: Window closed successfully.\n", __FUNCTION__);
+}
+
+void Window::handleKeyEvents(int key, int scancode, int action, int mods)
+{
+    std::string actionName;
+    switch (action)
+    {
+        case GLFW_PRESS:
+            actionName = "pressed";
+            break;
+
+        case GLFW_RELEASE:
+            actionName = "released";
+            break;
+
+        case GLFW_REPEAT:
+            actionName = "repeated";
+            break;
+
+        default:
+            actionName = "invalid";
+            break;
+    }
+    const char *keyName = glfwGetKeyName(key, 0);
+    Logger::info("%s: key %s (key %i, scancode %i) %s\n", __FUNCTION__, keyName, key, scancode, actionName.c_str());
 }

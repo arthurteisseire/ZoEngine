@@ -14,13 +14,14 @@ public:
     bool init(unsigned int width, unsigned int height, const std::string &title);
     void mainLoop();
     void cleanup();
-    void handleWindowCloseEvents();
 
     // Vulkan
     bool initVulkan();
 private:
-    GLFWwindow *m_window = nullptr;
+    void handleWindowCloseEvents();
+    void handleKeyEvents(int key, int scancode, int action, int mods);
 
+    GLFWwindow *m_window = nullptr;
     std::string m_applicationName;
     vk::Instance m_instance{};
     vk::SurfaceKHR m_surface{};
