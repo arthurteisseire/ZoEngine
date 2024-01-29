@@ -20,6 +20,7 @@ public:
 private:
     void handleWindowCloseEvents();
     void handleKeyEvents(int key, int scancode, int action, int mods);
+    void handleMouseButtonEvents(int button, int action, int mods);
 
     GLFWwindow *m_window = nullptr;
     std::string m_applicationName;

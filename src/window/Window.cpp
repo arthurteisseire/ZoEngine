@@ -44,17 +44,25 @@ bool Window::init(unsigned int width, unsigned int height, const std::string &ti
         return false;
     }
 
+    // Window close event
     glfwSetWindowUserPointer(m_window, this);
     glfwSetWindowCloseCallback(m_window, [](GLFWwindow *window) {
         auto thisWindow = static_cast<Window *>(glfwGetWindowUserPointer(window));
         thisWindow->handleWindowCloseEvents();
     });
 
-    glfwSetWindowUserPointer(m_window, this);
+    // Keyboard events
     glfwSetKeyCallback(m_window, [](GLFWwindow *window, int key, int scancode, int action, int mods) {
         auto thisWindow = static_cast<Window *>(glfwGetWindowUserPointer(window));
         thisWindow->handleKeyEvents(key, scancode, action, mods);
     });
+
+    // Mouse events
+    glfwSetMouseButtonCallback(m_window, [](GLFWwindow *window, int button, int action, int mods) {
+        auto thisWindow = static_cast<Window *>(glfwGetWindowUserPointer(window));
+        thisWindow->handleMouseButtonEvents(button, action, mods);
+    });
+
     return true;
 }
 
@@ -167,4 +175,44 @@ void Window::handleKeyEvents(int key, int scancode, int action, int mods)
     }
     const char *keyName = glfwGetKeyName(key, 0);
     Logger::info("%s: key %s (key %i, scancode %i) %s\n", __FUNCTION__, keyName, key, scancode, actionName.c_str());
+}
+
+void Window::handleMouseButtonEvents(int button, int action, int mods)
+{
+    std::string actionName;
+    switch (action)
+    {
+        case GLFW_PRESS:
+            actionName = "pressed";
+            break;
+
+        case GLFW_RELEASE:
+            actionName = "released";
+            break;
+
+        default:
+            actionName = "invalid";
+            break;
+    }
+
+    std::string mouseButtonName;
+    switch (button)
+    {
+        case GLFW_MOUSE_BUTTON_LEFT:
+            mouseButtonName = "left";
+            break;
+
+        case GLFW_MOUSE_BUTTON_MIDDLE:
+            mouseButtonName = "middle";
+            break;
+
+        case GLFW_MOUSE_BUTTON_RIGHT:
+            mouseButtonName = "right";
+            break;
+
+        default:
+            mouseButtonName = "not handled yet";
+            break;
+    }
+    Logger::info("%s: %s mouse button %i) %s\n", __FUNCTION__, mouseButtonName.c_str(), button, actionName.c_str());
 }
