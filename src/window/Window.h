@@ -14,6 +14,7 @@ public:
     bool init(unsigned int width, unsigned int height, const std::string &title);
     void mainLoop();
     void cleanup();
+    void handleWindowCloseEvents();
 
     // Vulkan
     bool initVulkan();

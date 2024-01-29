@@ -43,6 +43,12 @@ bool Window::init(unsigned int width, unsigned int height, const std::string &ti
         glfwTerminate();
         return false;
     }
+
+    glfwSetWindowUserPointer(m_window, this);
+    glfwSetWindowCloseCallback(m_window, [](GLFWwindow *window) {
+        auto thisWindow = static_cast<Window *>(glfwGetWindowUserPointer(window));
+        thisWindow->handleWindowCloseEvents();
+    });
     return true;
 }
 
@@ -60,6 +66,11 @@ void Window::cleanup()
     m_instance.destroySurfaceKHR(m_surface, nullptr);
     glfwDestroyWindow(m_window);
     glfwTerminate();
+}
+
+void Window::handleWindowCloseEvents()
+{
+    Logger::info("%s: Window closed successfully.\n", __FUNCTION__);
 }
 
 bool Window::initVulkan()
