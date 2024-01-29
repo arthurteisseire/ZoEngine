@@ -57,6 +57,7 @@ void Window::mainLoop()
 void Window::cleanup()
 {
     Logger::info("%s: Terminating window\n", __FUNCTION__);
+    m_instance.destroySurfaceKHR(m_surface, nullptr);
     glfwDestroyWindow(m_window);
     glfwTerminate();
 }
