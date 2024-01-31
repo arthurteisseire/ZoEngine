@@ -1,5 +1,13 @@
 { pkgs ? import <nixpkgs> {} }:
 
+let
+  vma = pkgs.fetchFromGitHub {
+    owner = "GPUOpen-LibrariesAndSDKs";
+    repo = "VulkanMemoryAllocator";
+    rev = "a6bfc23";  # Commit hash
+    sha256 = "1hpzjwl5bgqv9hmf1fdldihfllcbdg515f391a200klg0rnixdds";    # Release hash
+  };
+in
 pkgs.mkShell {
   buildInputs = with pkgs; [
     # Vulkan libraries
@@ -8,6 +16,7 @@ pkgs.mkShell {
     vulkan-validation-layers
     vulkan-tools
     vulkan-headers
+    vk-bootstrap
 
     # Clang compiler and tools
     clang_10
@@ -17,6 +26,8 @@ pkgs.mkShell {
     # Other dependencies like GLFW for windowing
     glfw3
   ];
+
+  VMA_INCLUDE_PATH = "${vma}/include";
 
   # Environment variables and other shell setup
   shellHook = ''

@@ -18,6 +18,8 @@ target_include_directories(ZoEngine PRIVATE
         ${Vulkan_INCLUDE_DIRS}
         $ENV{GLFW_INCLUDE_DIR}
         $ENV{GLFW_LIBRARY_DIR}
+        $ENV{VMA_INCLUDE_PATH}
+        $ENV{CMAKE_INCLUDE_PATH}
         ${CMAKE_CURRENT_SOURCE_DIR}/src
         ${CMAKE_CURRENT_SOURCE_DIR}/src/tools
         ${CMAKE_CURRENT_SOURCE_DIR}/src/window

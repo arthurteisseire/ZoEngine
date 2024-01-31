@@ -1,10 +1,11 @@
 #ifndef ENGINE_WINDOW_H
 #define ENGINE_WINDOW_H
 
-#include <vulkan/vulkan.hpp>
-
 #define GGLFW_INCLUDE_VULKAN
 
+#include <vulkan/vulkan.hpp>
+#include <vk_mem_alloc.h>
+#include <VkBootstrap.h>
 #include <GLFW/glfw3.h>
 
 class Window
