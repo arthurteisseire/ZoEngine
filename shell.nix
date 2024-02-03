@@ -5,7 +5,14 @@ let
     owner = "GPUOpen-LibrariesAndSDKs";
     repo = "VulkanMemoryAllocator";
     rev = "a6bfc23";  # Commit hash
-    sha256 = "1hpzjwl5bgqv9hmf1fdldihfllcbdg515f391a200klg0rnixdds";    # Release hash
+    sha256 = "1hpzjwl5bgqv9hmf1fdldihfllcbdg515f391a200klg0rnixdds";
+  };
+
+  stb = pkgs.fetchFromGitHub {
+    owner = "nothings";
+    repo = "stb";
+    rev = "f4a71b1";
+    sha256 = "11mm69313i9gbxm90lamic3xlfdx5zyhjwnhpp0aqym5b2pf6w9i";
   };
 in
 pkgs.mkShell {
@@ -16,7 +23,9 @@ pkgs.mkShell {
     vulkan-validation-layers
     vulkan-tools
     vulkan-headers
+    shaderc
     vk-bootstrap
+    glm
 
     # Clang compiler and tools
     clang_10
@@ -28,6 +37,7 @@ pkgs.mkShell {
   ];
 
   VMA_INCLUDE_PATH = "${vma}/include";
+  STB_INCLUDE_PATH = "${stb}/";
 
   # Environment variables and other shell setup
   shellHook = ''

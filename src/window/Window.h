@@ -1,32 +1,34 @@
 #ifndef ENGINE_WINDOW_H
 #define ENGINE_WINDOW_H
 
-#define GGLFW_INCLUDE_VULKAN
+#include <memory>
 
-#include <vulkan/vulkan.hpp>
+#include <vulkan/vulkan.h>
 #include <vk_mem_alloc.h>
 #include <VkBootstrap.h>
+
+#define GGLFW_INCLUDE_VULKAN
+
 #include <GLFW/glfw3.h>
+
+#include "VkRenderer.h"
+#include "model/Model.h"
 
 class Window
 {
 public:
-    // Glfw
     bool init(unsigned int width, unsigned int height, const std::string &title);
     void mainLoop();
     void cleanup();
 
-    // Vulkan
-    bool initVulkan();
 private:
     void handleWindowCloseEvents();
     void handleKeyEvents(int key, int scancode, int action, int mods);
     void handleMouseButtonEvents(int button, int action, int mods);
 
-    GLFWwindow *m_window = nullptr;
-    std::string m_applicationName;
-    vk::Instance m_instance{};
-    vk::SurfaceKHR m_surface{};
+    GLFWwindow *mWindow = nullptr;
+    std::unique_ptr<VkRenderer> mRenderer;
+    std::unique_ptr<Model> mModel;
 };
 
 #endif //ENGINE_WINDOW_H
