@@ -5,7 +5,7 @@
 #include "Shader.h"
 #include "Logger.h"
 
-VkShaderModule Shader::loadShader(VkDevice device, std::string shaderFileName)
+VkShaderModule Shader::loadShader(VkDevice device, const std::string &shaderFileName)
 {
     std::string shaderAsText;
     shaderAsText = loadFileToString(shaderFileName);
