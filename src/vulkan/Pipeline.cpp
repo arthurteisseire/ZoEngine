@@ -8,7 +8,7 @@
 #include "Logger.h"
 #include "Shader.h"
 
-bool Pipeline::init(VkRenderData &renderData, std::string vertexShaderFilename, std::string fragmentShaderFilename)
+bool Pipeline::init(VkRenderData &renderData, const std::string& vertexShaderFilename, const std::string& fragmentShaderFilename)
 {
     /* pipeline layout */
 

@@ -6,7 +6,7 @@
 class Pipeline
 {
 public:
-    static bool init(VkRenderData &renderData, std::string vertexShaderFilename, std::string fragmentShaderFilename);
+    static bool init(VkRenderData &renderData, const std::string& vertexShaderFilename, const std::string& fragmentShaderFilename);
     static void cleanup(VkRenderData &renderData);
 };
 

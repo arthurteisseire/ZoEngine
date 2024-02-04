@@ -21,7 +21,7 @@ public:
 private:
     VkRenderData mRenderData{};
 
-    int mTriangleCount = 0;
+    std::size_t mTriangleCount = 0;
 
     GLFWwindow *mWindow = nullptr;
 

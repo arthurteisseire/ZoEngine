@@ -499,6 +499,12 @@ bool VkRenderer::draw()
     renderPassBeginInfo.clearValueCount = 2;
     renderPassBeginInfo.pClearValues = clearValues;
 
+    vkCmdBeginRenderPass(mRenderData.rdCommandBuffer, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
+
+    // The rendering pipeline happens here
+    vkCmdBindPipeline(mRenderData.rdCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, mRenderData.rdPipeline);
+
+    // Required for dynamic viewport
     VkViewport viewport{};
     viewport.x = 0.0f;
     viewport.y = 0.0f;
@@ -506,18 +512,11 @@ bool VkRenderer::draw()
     viewport.height = static_cast<float>(mRenderData.rdVkbSwapchain.extent.height);
     viewport.minDepth = 0.0f;
     viewport.maxDepth = 1.0f;
+    vkCmdSetViewport(mRenderData.rdCommandBuffer, 0, 1, &viewport);
 
     VkRect2D scissors{};
     scissors.offset = {0, 0};
     scissors.extent = mRenderData.rdVkbSwapchain.extent;
-
-    vkCmdBeginRenderPass(mRenderData.rdCommandBuffer, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
-
-    // The rendering pipeline happens here
-    vkCmdBindPipeline(mRenderData.rdCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, mRenderData.rdPipeline);
-
-    // Required for dynamic viewport
-    vkCmdSetViewport(mRenderData.rdCommandBuffer, 0, 1, &viewport);
     vkCmdSetScissor(mRenderData.rdCommandBuffer, 0, 1, &scissors);
 
     // The triangle drawing itself
