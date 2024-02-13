@@ -34,6 +34,9 @@ target_link_libraries(ZoEngine PRIVATE
         glfw
 )
 
+find_program(GLSLC_EXECUTABLE NAMES glslc)
+message("glslc: ${GLSLC_EXECUTABLE}")
+
 # compile shaders
 set(SHADER_DIR "src/shader")
 file(GLOB GLSL_SOURCE_FILES
@@ -41,13 +44,19 @@ file(GLOB GLSL_SOURCE_FILES
         ${SHADER_DIR}/*.vert
 )
 foreach (GLSL ${GLSL_SOURCE_FILES})
+    message("glslc source file: ${GLSL}")
     get_filename_component(FILE_NAME ${GLSL} NAME)
     set(SPIRV "${SHADER_DIR}/${FILE_NAME}.spv")
+    set(DIRECTORY_COMMAND "${CMAKE_COMMAND} -E make_directory ${SHADER_DIR}")
+    set(COMPILE_COMMAND "${GLSLC_EXECUTABLE} ${GLSL} -o ${SPIRV}")
+    message("direcory command: ${DIRECTORY_COMMAND}")
+    message("compile command: ${COMPILE_COMMAND}")
     add_custom_command(
             OUTPUT ${SPIRV}
             COMMAND ${CMAKE_COMMAND} -E make_directory "${SHADER_DIR}"
             COMMAND ${GLSLC_EXECUTABLE} ${GLSL} -o ${SPIRV}
-            DEPENDS ${GLSL})
+            DEPENDS ${GLSL}
+    )
     list(APPEND SPIRV_BINARY_FILES ${SPIRV})
 endforeach ()
 
