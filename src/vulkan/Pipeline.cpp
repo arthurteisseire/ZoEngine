@@ -8,7 +8,8 @@
 #include "Logger.h"
 #include "Shader.h"
 
-bool Pipeline::init(VkRenderData &renderData, const std::string& vertexShaderFilename, const std::string& fragmentShaderFilename)
+bool Pipeline::init(VkRenderData &renderData, const std::string &vertexShaderFilename,
+                    const std::string &fragmentShaderFilename)
 {
     /* pipeline layout */
 
@@ -62,19 +63,25 @@ bool Pipeline::init(VkRenderData &renderData, const std::string& vertexShaderFil
     positionAttribute.format = VK_FORMAT_R32G32B32_SFLOAT;
     positionAttribute.offset = offsetof(MeshVertex, position);
 
+    VkVertexInputAttributeDescription colorAttribute{};
+    colorAttribute.binding = 0;
+    colorAttribute.location = 1;
+    colorAttribute.format = VK_FORMAT_R32G32B32_SFLOAT;
+    colorAttribute.offset = offsetof(MeshVertex, color);
+
     VkVertexInputAttributeDescription uvAttribute{};
     uvAttribute.binding = 0;
-    uvAttribute.location = 1;
+    uvAttribute.location = 2;
     uvAttribute.format = VK_FORMAT_R32G32_SFLOAT;
     uvAttribute.offset = offsetof(MeshVertex, uv);
 
-    VkVertexInputAttributeDescription attributes[] = {positionAttribute, uvAttribute};
+    VkVertexInputAttributeDescription attributes[] = {positionAttribute, colorAttribute, uvAttribute};
 
     VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
     vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
     vertexInputInfo.vertexBindingDescriptionCount = 1;
     vertexInputInfo.pVertexBindingDescriptions = &mainBinding;
-    vertexInputInfo.vertexAttributeDescriptionCount = 2;
+    vertexInputInfo.vertexAttributeDescriptionCount = 3;
     vertexInputInfo.pVertexAttributeDescriptions = attributes;
 
     VkPipelineInputAssemblyStateCreateInfo inputAssemblyInfo{};
