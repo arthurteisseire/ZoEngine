@@ -3,3 +3,6 @@ Makefile
 .idea/
 cmake-build-debug/
 *.spv
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
