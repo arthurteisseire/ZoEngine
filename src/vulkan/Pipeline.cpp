@@ -14,21 +14,6 @@ bool Pipeline::init(VkRenderData &renderData,
                     const std::string &vertexShaderFilename,
                     const std::string &fragmentShaderFilename)
 {
-    /* pipeline layout */
-
-    VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
-    pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-    pipelineLayoutInfo.setLayoutCount = 1;
-    pipelineLayoutInfo.pSetLayouts = &renderData.rdTextureLayout;
-    pipelineLayoutInfo.pushConstantRangeCount = 0;
-
-    if (vkCreatePipelineLayout(renderData.rdVkbDevice.device, &pipelineLayoutInfo, nullptr,
-                               &pipelineLayout) != VK_SUCCESS)
-    {
-        Logger::error("%s error: could not create pipeline layout\n", __FUNCTION__);
-        return false;
-    }
-
     /* shader */
     VkShaderModule vertexModule = Shader::loadShader(renderData.rdVkbDevice.device, vertexShaderFilename);
     VkShaderModule fragmentModule = Shader::loadShader(renderData.rdVkbDevice.device, fragmentShaderFilename);
@@ -192,9 +177,7 @@ bool Pipeline::init(VkRenderData &renderData,
 }
 
 void Pipeline::cleanup(VkRenderData &renderData,
-                       VkPipelineLayout &pipelineLayout,
                        VkPipeline &pipeline)
 {
     vkDestroyPipeline(renderData.rdVkbDevice.device, pipeline, nullptr);
-    vkDestroyPipelineLayout(renderData.rdVkbDevice.device, pipelineLayout, nullptr);
 }

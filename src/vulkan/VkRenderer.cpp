@@ -2,6 +2,7 @@
 #define VMA_IMPLEMENTATION
 
 #include <vk_mem_alloc.h>
+#include <glm/gtc/matrix_transform.hpp>
 
 #include "VkRenderer.h"
 #include "Logger.h"
@@ -12,10 +13,16 @@
 #include "CommandBuffer.h"
 #include "SyncObjects.h"
 #include "Texture.h"
+#include "UniformBuffer.h"
+#include "PipelineLayout.h"
 
 VkRenderer::VkRenderer(GLFWwindow *window)
 {
     mWindow = window;
+
+    // Identity matrices
+    mMatrices.viewMatrix = glm::mat4(1.0f);
+    mMatrices.projectionMatrix = glm::mat4(1.0f);
 }
 
 bool VkRenderer::init(unsigned int width, unsigned int height)
@@ -68,13 +75,23 @@ bool VkRenderer::init(unsigned int width, unsigned int height)
         return false;
     }
 
+    if (!createUBO())
+    {
+        return false;
+    }
+
     if (!createRenderPass())
     {
         return false;
     }
 
+    if (!createPipelineLayout())
+    {
+        return false;
+    }
+
     /* pipeline needs texture layout */
-    if (!createPipeline())
+    if (!createPipelines())
     {
         return false;
     }
@@ -282,7 +299,22 @@ bool VkRenderer::createRenderPass()
     return true;
 }
 
-bool VkRenderer::createPipeline()
+bool VkRenderer::createPipelineLayout()
+{
+    if (!PipelineLayout::init(mRenderData, mRenderData.rdPipelineLayout))
+    {
+        Logger::error("%s error: could not init pipeline layout\n", __FUNCTION__);
+        return false;
+    }
+    if (!PipelineLayout::init(mRenderData, mRenderData.rdPipelineLayoutChanged))
+    {
+        Logger::error("%s error: could not init pipeline layout\n", __FUNCTION__);
+        return false;
+    }
+    return true;
+}
+
+bool VkRenderer::createPipelines()
 {
     std::string vertexShaderFile = "src/shader/basic.vert.spv";
     std::string fragmentShaderFile = "src/shader/basic.frag.spv";
@@ -351,6 +383,16 @@ bool VkRenderer::createSyncObjects()
     return true;
 }
 
+bool VkRenderer::createUBO()
+{
+    if (!UniformBuffer::init(mRenderData))
+    {
+        Logger::error("%s error: could not create uniform buffers\n", __FUNCTION__);
+        return false;
+    }
+    return true;
+}
+
 bool VkRenderer::loadTexture()
 {
     std::string textureFileName = "../resource/texture/crate.png";
@@ -389,9 +431,12 @@ void VkRenderer::cleanup()
     CommandBuffer::cleanup(mRenderData, mRenderData.rdCommandBuffer);
     CommandPool::cleanup(mRenderData);
     Framebuffer::cleanup(mRenderData);
-    Pipeline::cleanup(mRenderData, mRenderData.rdPipelineLayout, mRenderData.rdPipeline);
-    Pipeline::cleanup(mRenderData, mRenderData.rdPipelineLayoutChanged, mRenderData.rdPipelineChanged);
+    Pipeline::cleanup(mRenderData, mRenderData.rdPipeline);
+    PipelineLayout::cleanup(mRenderData, mRenderData.rdPipelineLayout);
+    Pipeline::cleanup(mRenderData, mRenderData.rdPipelineChanged);
+    PipelineLayout::cleanup(mRenderData, mRenderData.rdPipelineLayoutChanged);
     Renderpass::cleanup(mRenderData);
+    UniformBuffer::cleanup(mRenderData);
 
     vkDestroyImageView(mRenderData.rdVkbDevice.device, mRenderData.rdDepthImageView, nullptr);
     vmaDestroyImage(mRenderData.rdAllocator, mRenderData.rdDepthImage, mRenderData.rdDepthImageAlloc);
@@ -516,14 +561,32 @@ bool VkRenderer::draw()
     renderPassBeginInfo.clearValueCount = 2;
     renderPassBeginInfo.pClearValues = clearValues;
 
+    // Set projection matrix
+    const auto t = static_cast<float>(glfwGetTime());
+    glm::vec3 cameraPosition = glm::vec3(0.4f, 0.3f, 1.0f);
+    glm::vec3 cameraLookAtPosition = glm::vec3(0.0f, 0.0f, 0.0f);
+    glm::vec3 cameraUpVector = glm::vec3(0.0f, 1.0f, 0.0f);
+
+    mMatrices.projectionMatrix = glm::perspective(glm::radians(90.0f), static_cast<float>(mRenderData.rdVkbSwapchain.extent.width) / static_cast<float>(mRenderData.rdVkbSwapchain.extent.height), 0.1f, 10.0f);
+
+    glm::mat4 model = glm::mat4(1.0f);
+
+    if (!mUseChangedShader) {
+        model = glm::rotate(glm::mat4(1.0f), -t, glm::vec3(0.0f, 0.0f, 1.0f));
+    } else {
+        model = glm::rotate(glm::mat4(1.0f), t, glm::vec3(0.0f, 0.0f, 1.0f));
+    }
+    // Set view matrix
+    mMatrices.viewMatrix = glm::lookAt(cameraPosition, cameraLookAtPosition, cameraUpVector) * model;
+
+    // Begin render pass
     vkCmdBeginRenderPass(mRenderData.rdCommandBuffer, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
 
     // The rendering pipeline happens here
-    if (mUseShaderSwitch)
+    if (mUseChangedShader)
     {
         vkCmdBindPipeline(mRenderData.rdCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, mRenderData.rdPipelineChanged);
-    }
-    else
+    } else
     {
         vkCmdBindPipeline(mRenderData.rdCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, mRenderData.rdPipeline);
     }
@@ -556,6 +619,16 @@ bool VkRenderer::draw()
             0,
             nullptr
     );
+    vkCmdBindDescriptorSets(
+            mRenderData.rdCommandBuffer,
+            VK_PIPELINE_BIND_POINT_GRAPHICS,
+            mRenderData.rdPipelineLayout,
+            1,
+            1,
+            &mRenderData.rdUBODescriptorSet,
+            0,
+            nullptr
+    );
 
     vkCmdDraw(mRenderData.rdCommandBuffer, mTriangleCount * 3, 1, 0, 0);
 
@@ -566,6 +639,8 @@ bool VkRenderer::draw()
         Logger::error("$s: error: failed to end command buffer\n", __FUNCTION__);
         return false;
     }
+
+    UniformBuffer::uploadData(mRenderData, mMatrices);
 
     VkSubmitInfo submitInfo{};
     submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
@@ -618,6 +693,6 @@ void VkRenderer::handleKeyEvents(int key, int scancode, int action, int mods)
 {
     if (glfwGetKey(mWindow, GLFW_KEY_SPACE) == GLFW_PRESS)
     {
-        mUseShaderSwitch = !mUseShaderSwitch;
+        mUseChangedShader = !mUseChangedShader;
     }
 }

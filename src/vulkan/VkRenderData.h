@@ -19,6 +19,12 @@ struct BasicMesh
     std::vector<MeshVertex> vertices;
 };
 
+struct VkUploadMatrices
+{
+    glm::mat4 viewMatrix;
+    glm::mat4 projectionMatrix;
+};
+
 struct VkRenderData
 {
     VmaAllocator rdAllocator;
@@ -58,8 +64,15 @@ struct VkRenderData
     VmaAllocation rdTextureImageAlloc = VK_NULL_HANDLE;
 
     VkDescriptorPool rdDescriptorPool = VK_NULL_HANDLE;
-    VkDescriptorSetLayout rdTextureLayout = VK_NULL_HANDLE;
+    VkDescriptorSetLayout rdTextureDescriptorLayout = VK_NULL_HANDLE;
     VkDescriptorSet rdDescriptorSet = VK_NULL_HANDLE;
+
+    VkBuffer rdUboBuffer = VK_NULL_HANDLE;
+    VmaAllocation rdUboBufferAlloc = nullptr;
+
+    VkDescriptorPool rdUBODescriptorPool = VK_NULL_HANDLE;
+    VkDescriptorSetLayout rdUBODescriptorLayout = VK_NULL_HANDLE;
+    VkDescriptorSet rdUBODescriptorSet = VK_NULL_HANDLE;
 };
 
 #endif //ZOENGINE_VKRENDERDATA_H

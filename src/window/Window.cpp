@@ -54,17 +54,22 @@ bool Window::init(unsigned int width, unsigned int height, const std::string &ti
         thisWindow->handleWindowCloseEvents();
     });
 
-    // Keyboard events
-    glfwSetKeyCallback(mWindow, [](GLFWwindow *window, int key, int scancode, int action, int mods) {
-        auto thisWindow = static_cast<Window *>(glfwGetWindowUserPointer(window));
-        thisWindow->mRenderer->handleKeyEvents(key, scancode, action, mods);
-        thisWindow->handleKeyEvents(key, scancode, action, mods);
-    });
-
     // Mouse events
     glfwSetMouseButtonCallback(mWindow, [](GLFWwindow *window, int button, int action, int mods) {
         auto thisWindow = static_cast<Window *>(glfwGetWindowUserPointer(window));
         thisWindow->handleMouseButtonEvents(button, action, mods);
+    });
+
+    // Window close event
+    glfwSetWindowUserPointer(mWindow, mRenderer.get());
+    glfwSetWindowSizeCallback(mWindow, [](GLFWwindow *window, int width, int height) {
+        auto renderer = static_cast<VkRenderer *>(glfwGetWindowUserPointer(window));
+        renderer->setSize(width, height);
+    });
+
+    glfwSetKeyCallback(mWindow, [](GLFWwindow *window, int key, int scancode, int action, int mods) {
+        auto renderer = static_cast<VkRenderer *>(glfwGetWindowUserPointer(window));
+        renderer->handleKeyEvents(key, scancode, action, mods);
     });
 
     return true;

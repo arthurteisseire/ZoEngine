@@ -257,7 +257,7 @@ bool Texture::loadTexture(VkRenderData &renderData, const std::string &textureFi
     textureCreateInfo.pBindings = &textureBind;
 
     if (vkCreateDescriptorSetLayout(renderData.rdVkbDevice.device, &textureCreateInfo, nullptr,
-                                    &renderData.rdTextureLayout) != VK_SUCCESS)
+                                    &renderData.rdTextureDescriptorLayout) != VK_SUCCESS)
     {
         Logger::error("%s error: could not create descriptor set layout\n", __FUNCTION__);
         return false;
@@ -284,7 +284,7 @@ bool Texture::loadTexture(VkRenderData &renderData, const std::string &textureFi
     descriptorAllocateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
     descriptorAllocateInfo.descriptorPool = renderData.rdDescriptorPool;
     descriptorAllocateInfo.descriptorSetCount = 1;
-    descriptorAllocateInfo.pSetLayouts = &renderData.rdTextureLayout;
+    descriptorAllocateInfo.pSetLayouts = &renderData.rdTextureDescriptorLayout;
 
     if (vkAllocateDescriptorSets(renderData.rdVkbDevice.device, &descriptorAllocateInfo, &renderData.rdDescriptorSet) !=
         VK_SUCCESS)
@@ -316,7 +316,7 @@ bool Texture::loadTexture(VkRenderData &renderData, const std::string &textureFi
 void Texture::cleanup(VkRenderData &renderData)
 {
     vkDestroyDescriptorPool(renderData.rdVkbDevice.device, renderData.rdDescriptorPool, nullptr);
-    vkDestroyDescriptorSetLayout(renderData.rdVkbDevice.device, renderData.rdTextureLayout, nullptr);
+    vkDestroyDescriptorSetLayout(renderData.rdVkbDevice.device, renderData.rdTextureDescriptorLayout, nullptr);
     vkDestroySampler(renderData.rdVkbDevice.device, renderData.rdTextureSampler, nullptr);
     vkDestroyImageView(renderData.rdVkbDevice.device, renderData.rdTextureImageView, nullptr);
     vmaDestroyImage(renderData.rdAllocator, renderData.rdTextureImage, renderData.rdTextureImageAlloc);

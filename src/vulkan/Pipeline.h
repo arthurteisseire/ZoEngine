@@ -6,8 +6,6 @@
 class Pipeline
 {
 public:
-    // TODO: Create a PipelineLayout class
-
     static bool init(VkRenderData &renderData,
                      VkPipelineLayout &pipelineLayout,
                      VkPipeline &pipeline,
@@ -15,7 +13,6 @@ public:
                      const std::string &fragmentShaderFilename);
 
     static void cleanup(VkRenderData &renderData,
-                        VkPipelineLayout &pipelineLayout,
                         VkPipeline &pipeline);
 };
 

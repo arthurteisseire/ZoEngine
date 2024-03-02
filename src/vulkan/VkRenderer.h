@@ -32,14 +32,17 @@ private:
     VkBuffer mVertexBuffer;
     VmaAllocation mVertexBufferAlloc;
 
-    bool mUseShaderSwitch = false;
+    VkUploadMatrices mMatrices{};
+
+    bool mUseChangedShader = false;
 
     bool deviceInit();
     bool getQueue();
     bool createDepthBuffer();
     bool createSwapchain();
     bool createRenderPass();
-    bool createPipeline();
+    bool createPipelineLayout();
+    bool createPipelines();
     bool createFramebuffer();
     bool createCommandPool();
     bool createCommandBuffer();
@@ -49,6 +52,7 @@ private:
     bool initVma();
 
     bool recreateSwapchain();
+    bool createUBO();
 };
 
 
