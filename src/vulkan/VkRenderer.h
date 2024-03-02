@@ -17,6 +17,7 @@ public:
     bool uploadData(BasicMesh vertexData);
     bool draw();
     void cleanup();
+    void handleKeyEvents(int key, int scancode, int action, int mods);
 
 private:
     VkRenderData mRenderData{};
@@ -30,6 +31,8 @@ private:
 
     VkBuffer mVertexBuffer;
     VmaAllocation mVertexBufferAlloc;
+
+    bool mUseShaderSwitch = false;
 
     bool deviceInit();
     bool getQueue();

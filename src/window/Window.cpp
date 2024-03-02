@@ -57,6 +57,7 @@ bool Window::init(unsigned int width, unsigned int height, const std::string &ti
     // Keyboard events
     glfwSetKeyCallback(mWindow, [](GLFWwindow *window, int key, int scancode, int action, int mods) {
         auto thisWindow = static_cast<Window *>(glfwGetWindowUserPointer(window));
+        thisWindow->mRenderer->handleKeyEvents(key, scancode, action, mods);
         thisWindow->handleKeyEvents(key, scancode, action, mods);
     });
 

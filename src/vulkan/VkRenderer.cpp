@@ -286,9 +286,25 @@ bool VkRenderer::createPipeline()
 {
     std::string vertexShaderFile = "src/shader/basic.vert.spv";
     std::string fragmentShaderFile = "src/shader/basic.frag.spv";
-    if (!Pipeline::init(mRenderData, vertexShaderFile, fragmentShaderFile))
+    if (!Pipeline::init(mRenderData,
+                        mRenderData.rdPipelineLayout,
+                        mRenderData.rdPipeline,
+                        vertexShaderFile,
+                        fragmentShaderFile))
     {
         Logger::info("%s error: could not init pipeline\n", __FUNCTION__);
+        return false;
+    }
+
+    std::string vertexShaderFileChanged = "src/shader/changed.vert.spv";
+    std::string fragmentShaderFileChanged = "src/shader/changed.frag.spv";
+    if (!Pipeline::init(mRenderData,
+                        mRenderData.rdPipelineLayoutChanged,
+                        mRenderData.rdPipelineChanged,
+                        vertexShaderFileChanged,
+                        fragmentShaderFileChanged))
+    {
+        Logger::info("%s error: could not init pipeline changed\n", __FUNCTION__);
         return false;
     }
     return true;
@@ -373,7 +389,8 @@ void VkRenderer::cleanup()
     CommandBuffer::cleanup(mRenderData, mRenderData.rdCommandBuffer);
     CommandPool::cleanup(mRenderData);
     Framebuffer::cleanup(mRenderData);
-    Pipeline::cleanup(mRenderData);
+    Pipeline::cleanup(mRenderData, mRenderData.rdPipelineLayout, mRenderData.rdPipeline);
+    Pipeline::cleanup(mRenderData, mRenderData.rdPipelineLayoutChanged, mRenderData.rdPipelineChanged);
     Renderpass::cleanup(mRenderData);
 
     vkDestroyImageView(mRenderData.rdVkbDevice.device, mRenderData.rdDepthImageView, nullptr);
@@ -502,7 +519,14 @@ bool VkRenderer::draw()
     vkCmdBeginRenderPass(mRenderData.rdCommandBuffer, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
 
     // The rendering pipeline happens here
-    vkCmdBindPipeline(mRenderData.rdCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, mRenderData.rdPipeline);
+    if (mUseShaderSwitch)
+    {
+        vkCmdBindPipeline(mRenderData.rdCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, mRenderData.rdPipelineChanged);
+    }
+    else
+    {
+        vkCmdBindPipeline(mRenderData.rdCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, mRenderData.rdPipeline);
+    }
 
     // Required for dynamic viewport
     VkViewport viewport{};
@@ -588,4 +612,12 @@ bool VkRenderer::draw()
     }
 
     return true;
+}
+
+void VkRenderer::handleKeyEvents(int key, int scancode, int action, int mods)
+{
+    if (glfwGetKey(mWindow, GLFW_KEY_SPACE) == GLFW_PRESS)
+    {
+        mUseShaderSwitch = !mUseShaderSwitch;
+    }
 }

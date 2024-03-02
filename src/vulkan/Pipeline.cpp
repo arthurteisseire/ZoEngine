@@ -8,7 +8,10 @@
 #include "Logger.h"
 #include "Shader.h"
 
-bool Pipeline::init(VkRenderData &renderData, const std::string &vertexShaderFilename,
+bool Pipeline::init(VkRenderData &renderData,
+                    VkPipelineLayout &pipelineLayout,
+                    VkPipeline &pipeline,
+                    const std::string &vertexShaderFilename,
                     const std::string &fragmentShaderFilename)
 {
     /* pipeline layout */
@@ -20,7 +23,7 @@ bool Pipeline::init(VkRenderData &renderData, const std::string &vertexShaderFil
     pipelineLayoutInfo.pushConstantRangeCount = 0;
 
     if (vkCreatePipelineLayout(renderData.rdVkbDevice.device, &pipelineLayoutInfo, nullptr,
-                               &renderData.rdPipelineLayout) != VK_SUCCESS)
+                               &pipelineLayout) != VK_SUCCESS)
     {
         Logger::error("%s error: could not create pipeline layout\n", __FUNCTION__);
         return false;
@@ -168,16 +171,16 @@ bool Pipeline::init(VkRenderData &renderData, const std::string &vertexShaderFil
     pipelineCreateInfo.pColorBlendState = &colorBlendingInfo;
     pipelineCreateInfo.pDepthStencilState = &depthStencilInfo;
     pipelineCreateInfo.pDynamicState = &dynStatesInfo;
-    pipelineCreateInfo.layout = renderData.rdPipelineLayout;
+    pipelineCreateInfo.layout = pipelineLayout;
     pipelineCreateInfo.renderPass = renderData.rdRenderpass;
     pipelineCreateInfo.subpass = 0;
     pipelineCreateInfo.basePipelineHandle = VK_NULL_HANDLE;
 
     if (vkCreateGraphicsPipelines(renderData.rdVkbDevice.device, VK_NULL_HANDLE, 1, &pipelineCreateInfo, nullptr,
-                                  &renderData.rdPipeline) != VK_SUCCESS)
+                                  &pipeline) != VK_SUCCESS)
     {
         Logger::error("%s error: could not create rendering pipeline\n", __FUNCTION__);
-        vkDestroyPipelineLayout(renderData.rdVkbDevice.device, renderData.rdPipelineLayout, nullptr);
+        vkDestroyPipelineLayout(renderData.rdVkbDevice.device, pipelineLayout, nullptr);
         return false;
     }
 
@@ -188,8 +191,10 @@ bool Pipeline::init(VkRenderData &renderData, const std::string &vertexShaderFil
     return true;
 }
 
-void Pipeline::cleanup(VkRenderData &renderData)
+void Pipeline::cleanup(VkRenderData &renderData,
+                       VkPipelineLayout &pipelineLayout,
+                       VkPipeline &pipeline)
 {
-    vkDestroyPipeline(renderData.rdVkbDevice.device, renderData.rdPipeline, nullptr);
-    vkDestroyPipelineLayout(renderData.rdVkbDevice.device, renderData.rdPipelineLayout, nullptr);
+    vkDestroyPipeline(renderData.rdVkbDevice.device, pipeline, nullptr);
+    vkDestroyPipelineLayout(renderData.rdVkbDevice.device, pipelineLayout, nullptr);
 }

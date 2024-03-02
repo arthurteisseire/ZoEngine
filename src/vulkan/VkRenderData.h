@@ -42,6 +42,8 @@ struct VkRenderData
     VkRenderPass rdRenderpass = VK_NULL_HANDLE;
     VkPipelineLayout rdPipelineLayout = VK_NULL_HANDLE;
     VkPipeline rdPipeline = VK_NULL_HANDLE;
+    VkPipelineLayout rdPipelineLayoutChanged = VK_NULL_HANDLE;
+    VkPipeline rdPipelineChanged = VK_NULL_HANDLE;
 
     VkCommandPool rdCommandPool = VK_NULL_HANDLE;
     VkCommandBuffer rdCommandBuffer = VK_NULL_HANDLE;
