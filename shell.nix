@@ -26,6 +26,7 @@ pkgs.mkShell {
     shaderc
     vk-bootstrap
     glm
+    imgui
 
     # Clang compiler and tools
     clang_10

@@ -8,10 +8,22 @@ find_package(Vulkan REQUIRED)
 find_package(glm REQUIRED)
 
 # Define the executable
-FILE(GLOB_RECURSE MyCppSources src/*.cpp)
+file(GLOB_RECURSE MyCppSources src/*.cpp)
+
+find_path(IMGUI_BASE_DIR NAMES imgui/imgui.h HINTS ${CMAKE_INCLUDE_PATH})
+if (!IMGUI_BASE_DIR)
+    message("Can't find imgui include dir in CMAKE_INCLUDE_PATH: ${CMAKE_INCLUDE_PATH}")
+endif ()
+set(IMGUI_DIR "${IMGUI_BASE_DIR}/imgui")
+
+file(GLOB IMGUI_SOURCES
+        ${IMGUI_DIR}/*.cpp
+)
 add_executable(ZoEngine
         ${MyCppSources}
+        ${IMGUI_SOURCES}
 )
+
 
 # Include Vulkan header directories
 target_include_directories(ZoEngine PRIVATE
@@ -20,7 +32,8 @@ target_include_directories(ZoEngine PRIVATE
         $ENV{GLFW_LIBRARY_DIR}
         $ENV{VMA_INCLUDE_PATH}
         $ENV{STB_INCLUDE_PATH}
-        $ENV{CMAKE_INCLUDE_PATH}
+        ${IMGUI_DIR}
+        ${CMAKE_INCLUDE_PATH}
         ${CMAKE_CURRENT_SOURCE_DIR}/src
         ${CMAKE_CURRENT_SOURCE_DIR}/src/model
         ${CMAKE_CURRENT_SOURCE_DIR}/src/tools
