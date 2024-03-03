@@ -32,8 +32,6 @@ private:
 
     VkUploadMatrices mMatrices{};
 
-    bool mUseChangedShader = false;
-
     bool deviceInit();
     bool getQueue();
     bool createDepthBuffer();

@@ -592,7 +592,7 @@ bool VkRenderer::draw()
 
     glm::mat4 model = glm::mat4(1.0f);
 
-    if (!mUseChangedShader) {
+    if (!mRenderData.mUseChangedShader) {
         model = glm::rotate(glm::mat4(1.0f), -t, glm::vec3(0.0f, 0.0f, 1.0f));
     } else {
         model = glm::rotate(glm::mat4(1.0f), t, glm::vec3(0.0f, 0.0f, 1.0f));
@@ -604,7 +604,7 @@ bool VkRenderer::draw()
     vkCmdBeginRenderPass(mRenderData.rdCommandBuffer, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
 
     // The rendering pipeline happens here
-    if (mUseChangedShader)
+    if (mRenderData.mUseChangedShader)
     {
         vkCmdBindPipeline(mRenderData.rdCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, mRenderData.rdPipelineChanged);
     } else
@@ -718,6 +718,6 @@ void VkRenderer::handleKeyEvents(int key, int scancode, int action, int mods)
 {
     if (glfwGetKey(mRenderData.rdWindow, GLFW_KEY_SPACE) == GLFW_PRESS)
     {
-        mUseChangedShader = !mUseChangedShader;
+        mRenderData.mUseChangedShader = !mRenderData.mUseChangedShader;
     }
 }

@@ -83,6 +83,11 @@ void UserInterface::createFrame(VkRenderData &renderData) const
     ImGui::SameLine();
     ImGui::Text("%s", imgWindowPos.c_str());
 
+    if (ImGui::Button("Change shaders"))
+    {
+        renderData.mUseChangedShader = !renderData.mUseChangedShader;
+    }
+
     ImGui::End();
 }
 

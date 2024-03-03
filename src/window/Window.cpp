@@ -1,5 +1,6 @@
 #include <string>
 #include <vector>
+#include <imgui.h>
 #include "Window.h"
 #include "Logger.h"
 
@@ -54,11 +55,12 @@ bool Window::init(unsigned int width, unsigned int height, const std::string &ti
         thisWindow->handleWindowCloseEvents();
     });
 
-    // Mouse events
-    glfwSetMouseButtonCallback(mWindow, [](GLFWwindow *window, int button, int action, int mods) {
-        auto thisWindow = static_cast<Window *>(glfwGetWindowUserPointer(window));
-        thisWindow->handleMouseButtonEvents(button, action, mods);
-    });
+    // Capture Mouse events
+    // Commented to avoid capturing ImGui events
+//    glfwSetMouseButtonCallback(mWindow, [](GLFWwindow *window, int button, int action, int mods) {
+//        auto thisWindow = static_cast<Window *>(glfwGetWindowUserPointer(window));
+//        thisWindow->handleMouseButtonEvents(button, action, mods);
+//    });
 
     // Window close event
     glfwSetWindowUserPointer(mWindow, mRenderer.get());

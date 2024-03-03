@@ -34,6 +34,8 @@ struct VkRenderData
     int rdWidth = 0;
     int rdHeight = 0;
 
+    bool mUseChangedShader = false;
+
     VmaAllocator rdAllocator;
 
     vkb::Instance rdVkbInstance{};
