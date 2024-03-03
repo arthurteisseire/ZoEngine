@@ -18,6 +18,7 @@ set(IMGUI_DIR "${IMGUI_BASE_DIR}/imgui")
 
 file(GLOB IMGUI_SOURCES
         ${IMGUI_DIR}/*.cpp
+        ${IMGUI_DIR}/backends/imgui_impl_glfw.cpp
 )
 add_executable(ZoEngine
         ${MyCppSources}
@@ -39,6 +40,7 @@ target_include_directories(ZoEngine PRIVATE
         ${CMAKE_CURRENT_SOURCE_DIR}/src/tools
         ${CMAKE_CURRENT_SOURCE_DIR}/src/window
         ${CMAKE_CURRENT_SOURCE_DIR}/src/vulkan
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/ui
 )
 
 target_link_libraries(ZoEngine PRIVATE
