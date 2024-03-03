@@ -2,6 +2,7 @@
 #define ZOENGINE_VKRENDERDATA_H
 
 #include <vulkan/vulkan.h>
+#include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
 #include <VkBootstrap.h>
 #include <vk_mem_alloc.h>
@@ -27,9 +28,16 @@ struct VkUploadMatrices
 
 struct VkRenderData
 {
+    GLFWwindow *rdWindow = nullptr;
+
+    std::size_t mTriangleCount = 0;
+    int rdWidth = 0;
+    int rdHeight = 0;
+
     VmaAllocator rdAllocator;
 
     vkb::Instance rdVkbInstance{};
+    vkb::PhysicalDevice rdVkbPhysicalDevice{};
     vkb::Device rdVkbDevice{};
     vkb::Swapchain rdVkbSwapchain{};
 
@@ -73,6 +81,8 @@ struct VkRenderData
     VkDescriptorPool rdUBODescriptorPool = VK_NULL_HANDLE;
     VkDescriptorSetLayout rdUBODescriptorLayout = VK_NULL_HANDLE;
     VkDescriptorSet rdUBODescriptorSet = VK_NULL_HANDLE;
+
+    VkDescriptorPool rdImguiDescriptorPool = VK_NULL_HANDLE;
 };
 
 #endif //ZOENGINE_VKRENDERDATA_H

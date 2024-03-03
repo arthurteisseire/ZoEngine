@@ -19,6 +19,7 @@ set(IMGUI_DIR "${IMGUI_BASE_DIR}/imgui")
 file(GLOB IMGUI_SOURCES
         ${IMGUI_DIR}/*.cpp
         ${IMGUI_DIR}/backends/imgui_impl_glfw.cpp
+        ${IMGUI_DIR}/backends/imgui_impl_vulkan.cpp
 )
 add_executable(ZoEngine
         ${MyCppSources}

@@ -18,7 +18,7 @@
 
 VkRenderer::VkRenderer(GLFWwindow *window)
 {
-    mWindow = window;
+    mRenderData.rdWindow = window;
 
     // Identity matrices
     mMatrices.viewMatrix = glm::mat4(1.0f);
@@ -27,7 +27,7 @@ VkRenderer::VkRenderer(GLFWwindow *window)
 
 bool VkRenderer::init(unsigned int width, unsigned int height)
 {
-    if (!mWindow)
+    if (!mRenderData.rdWindow)
     {
         Logger::error("%s error: invalid GLFWwindow handle\n", __FUNCTION__);
         return false;
@@ -106,6 +106,13 @@ bool VkRenderer::init(unsigned int width, unsigned int height)
         return false;
     }
 
+    if (!initUserInterface())
+    {
+        return false;
+    }
+
+    setSize(width, height);
+
     Logger::info("%s: Vulkan renderer initialized to %ix%i\n", __FUNCTION__, width, height);
     return true;
 }
@@ -124,7 +131,7 @@ bool VkRenderer::deviceInit()
     mRenderData.rdVkbInstance = instRet.value();
 
     VkResult result = VK_ERROR_UNKNOWN;
-    result = glfwCreateWindowSurface(mRenderData.rdVkbInstance, mWindow, nullptr, &mSurface);
+    result = glfwCreateWindowSurface(mRenderData.rdVkbInstance, mRenderData.rdWindow, nullptr, &mSurface);
     if (result != VK_SUCCESS)
     {
         Logger::info("%s error: Could not create Vulkan surface\n", __FUNCTION__);
@@ -139,11 +146,11 @@ bool VkRenderer::deviceInit()
         Logger::info("%s error: could not get physical devices\n", __FUNCTION__);
         return false;
     }
-    mPhysDevice = physicalDevSelRet.value();
+    mRenderData.rdVkbPhysicalDevice = physicalDevSelRet.value();
 
-    Logger::info("%s: found physical device '%s'\n", __FUNCTION__, mPhysDevice.name.c_str());
+    Logger::info("%s: found physical device '%s'\n", __FUNCTION__, mRenderData.rdVkbPhysicalDevice.name.c_str());
 
-    vkb::DeviceBuilder devBuilder{mPhysDevice};
+    vkb::DeviceBuilder devBuilder{mRenderData.rdVkbPhysicalDevice};
     auto devBuilderRet = devBuilder.build();
     if (!devBuilderRet)
     {
@@ -251,10 +258,10 @@ bool VkRenderer::recreateSwapchain()
 {
     /* handle minimize */
     int width = 0, height = 0;
-    glfwGetFramebufferSize(mWindow, &width, &height);
+    glfwGetFramebufferSize(mRenderData.rdWindow, &width, &height);
     while (width == 0 || height == 0)
     {
-        glfwGetFramebufferSize(mWindow, &width, &height);
+        glfwGetFramebufferSize(mRenderData.rdWindow, &width, &height);
         glfwWaitEvents();
     }
 
@@ -408,7 +415,7 @@ bool VkRenderer::loadTexture()
 bool VkRenderer::initVma()
 {
     VmaAllocatorCreateInfo allocatorInfo{};
-    allocatorInfo.physicalDevice = mPhysDevice.physical_device;
+    allocatorInfo.physicalDevice = mRenderData.rdVkbPhysicalDevice.physical_device;
     allocatorInfo.device = mRenderData.rdVkbDevice.device;
     allocatorInfo.instance = mRenderData.rdVkbInstance.instance;
     if (vmaCreateAllocator(&allocatorInfo, &mRenderData.rdAllocator) != VK_SUCCESS)
@@ -417,6 +424,16 @@ bool VkRenderer::initVma()
         return false;
     }
 
+    return true;
+}
+
+bool VkRenderer::initUserInterface()
+{
+    if (!mUserInterface.init(mRenderData))
+    {
+        Logger::error("%s error: Can't init user inteface (imgui)", __FUNCTION__);
+        return false;
+    }
     return true;
 }
 
@@ -455,6 +472,8 @@ void VkRenderer::cleanup()
 
 void VkRenderer::setSize(unsigned int width, unsigned int height)
 {
+    mRenderData.rdWidth = static_cast<int>(width);
+    mRenderData.rdHeight = static_cast<int>(height);
     /* Vulkan detects changes and recreates swapchain */
     Logger::info("%s: resized window to %ix%i\n", __FUNCTION__, width, height);
 }
@@ -483,7 +502,7 @@ bool VkRenderer::uploadData(BasicMesh vertexData)
     std::memcpy(data, vertexData.vertices.data(), vertexData.vertices.size() * sizeof(MeshVertex));
     vmaUnmapMemory(mRenderData.rdAllocator, mVertexBufferAlloc);
 
-    mTriangleCount = vertexData.vertices.size() / 3;
+    mRenderData.mTriangleCount = vertexData.vertices.size() / 3;
 
     return true;
 }
@@ -630,7 +649,11 @@ bool VkRenderer::draw()
             nullptr
     );
 
-    vkCmdDraw(mRenderData.rdCommandBuffer, mTriangleCount * 3, 1, 0, 0);
+    vkCmdDraw(mRenderData.rdCommandBuffer, mRenderData.mTriangleCount * 3, 1, 0, 0);
+
+    // imgui overlay
+    mUserInterface.createFrame(mRenderData);
+    mUserInterface.render(mRenderData);
 
     vkCmdEndRenderPass(mRenderData.rdCommandBuffer);
 
@@ -691,7 +714,7 @@ bool VkRenderer::draw()
 
 void VkRenderer::handleKeyEvents(int key, int scancode, int action, int mods)
 {
-    if (glfwGetKey(mWindow, GLFW_KEY_SPACE) == GLFW_PRESS)
+    if (glfwGetKey(mRenderData.rdWindow, GLFW_KEY_SPACE) == GLFW_PRESS)
     {
         mUseChangedShader = !mUseChangedShader;
     }

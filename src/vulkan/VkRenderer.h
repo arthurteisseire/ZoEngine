@@ -7,6 +7,7 @@
 #include <VkBootstrap.h>
 #include <GLFW/glfw3.h>
 #include "VkRenderData.h"
+#include "UserInterface.h"
 
 class VkRenderer
 {
@@ -22,12 +23,9 @@ public:
 private:
     VkRenderData mRenderData{};
 
-    std::size_t mTriangleCount = 0;
-
-    GLFWwindow *mWindow = nullptr;
+    UserInterface mUserInterface;
 
     VkSurfaceKHR mSurface = VK_NULL_HANDLE;
-    vkb::PhysicalDevice mPhysDevice;
 
     VkBuffer mVertexBuffer;
     VmaAllocation mVertexBufferAlloc;
@@ -50,6 +48,7 @@ private:
     bool loadTexture();
 
     bool initVma();
+    bool initUserInterface();
 
     bool recreateSwapchain();
     bool createUBO();
