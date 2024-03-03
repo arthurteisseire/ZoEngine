@@ -441,6 +441,8 @@ void VkRenderer::cleanup()
 {
     vkDeviceWaitIdle(mRenderData.rdVkbDevice.device);
 
+    mUserInterface.cleanup(mRenderData);
+
     Texture::cleanup(mRenderData);
     vmaDestroyBuffer(mRenderData.rdAllocator, mVertexBuffer, mVertexBufferAlloc);
 
