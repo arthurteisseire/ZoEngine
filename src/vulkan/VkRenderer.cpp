@@ -323,8 +323,9 @@ bool VkRenderer::createPipelineLayout()
 
 bool VkRenderer::createPipelines()
 {
-    std::string vertexShaderFile = "src/shader/basic.vert.spv";
-    std::string fragmentShaderFile = "src/shader/basic.frag.spv";
+    std::string shaderOutputDir = "../cmake-build-debug/compiled_shaders/";
+    std::string vertexShaderFile = shaderOutputDir + "basic.vert.spv";
+    std::string fragmentShaderFile = shaderOutputDir + "basic.frag.spv";
     if (!Pipeline::init(mRenderData,
                         mRenderData.rdPipelineLayout,
                         mRenderData.rdPipeline,
@@ -335,8 +336,8 @@ bool VkRenderer::createPipelines()
         return false;
     }
 
-    std::string vertexShaderFileChanged = "src/shader/changed.vert.spv";
-    std::string fragmentShaderFileChanged = "src/shader/changed.frag.spv";
+    std::string vertexShaderFileChanged = shaderOutputDir + "changed.vert.spv";
+    std::string fragmentShaderFileChanged = shaderOutputDir + "changed.frag.spv";
     if (!Pipeline::init(mRenderData,
                         mRenderData.rdPipelineLayoutChanged,
                         mRenderData.rdPipelineChanged,

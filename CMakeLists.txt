@@ -54,36 +54,40 @@ find_program(GLSLC_EXECUTABLE NAMES glslc)
 message("glslc: ${GLSLC_EXECUTABLE}")
 
 # compile shaders
-set(SHADER_DIR "src/shader")
-file(GLOB GLSL_SOURCE_FILES
+# Define shader directories
+set(SHADER_DIR "${CMAKE_SOURCE_DIR}/src/shader")
+set(SHADER_OUTPUT_DIR "${CMAKE_BINARY_DIR}/shaders")
+message("CMAKE_BINARY_DIR: ${CMAKE_BINARY_DIR}")
+message("CMAKE_CURRENT_BINARY_DIR: ${CMAKE_CURRENT_BINARY_DIR}")
+
+
+# Find shaders
+file(GLOB SHADER_FILES
         ${SHADER_DIR}/*.frag
         ${SHADER_DIR}/*.vert
 )
-foreach (GLSL ${GLSL_SOURCE_FILES})
-    message("glslc source file: ${GLSL}")
-    get_filename_component(FILE_NAME ${GLSL} NAME)
-    set(SPIRV "${SHADER_DIR}/${FILE_NAME}.spv")
-    set(DIRECTORY_COMMAND "${CMAKE_COMMAND} -E make_directory ${SHADER_DIR}")
-    set(COMPILE_COMMAND "${GLSLC_EXECUTABLE} ${GLSL} -o ${SPIRV}")
-    message("direcory command: ${DIRECTORY_COMMAND}")
-    message("compile command: ${COMPILE_COMMAND}")
+#set(SHADER_FILES
+#        ${CMAKE_CURRENT_SOURCE_DIR}/shader.vert
+#        ${CMAKE_CURRENT_SOURCE_DIR}/shader.frag
+#)
+
+set(COMPILED_SHADERS_DIR ${CMAKE_CURRENT_BINARY_DIR}/compiled_shaders)
+file(MAKE_DIRECTORY ${COMPILED_SHADERS_DIR})
+
+foreach(SHADER ${SHADER_FILES})
+    get_filename_component(SHADER_NAME ${SHADER} NAME)
     add_custom_command(
-            OUTPUT ${SPIRV}
-            COMMAND ${CMAKE_COMMAND} -E make_directory "${SHADER_DIR}"
-            COMMAND ${GLSLC_EXECUTABLE} ${GLSL} -o ${SPIRV}
-            DEPENDS ${GLSL}
+            OUTPUT ${COMPILED_SHADERS_DIR}/${SHADER_NAME}.spv
+            COMMAND ${GLSLC_EXECUTABLE} ${SHADER} -o ${COMPILED_SHADERS_DIR}/${SHADER_NAME}.spv
+            DEPENDS ${SHADER}
+            COMMENT "Compiling ${SHADER_NAME} to SPIR-V"
     )
-    list(APPEND SPIRV_BINARY_FILES ${SPIRV})
-endforeach ()
+    list(APPEND COMPILED_SHADER_OUTPUTS ${COMPILED_SHADERS_DIR}/${SHADER_NAME}.spv)
+endforeach()
 
-add_custom_target(
-        Shaders
-        DEPENDS ${SPIRV_BINARY_FILES}
+# Custom target to compile all shaders
+add_custom_target(compile_shaders ALL
+        DEPENDS ${COMPILED_SHADER_OUTPUTS}
 )
-add_dependencies(ZoEngine Shaders)
 
-add_custom_command(TARGET Shaders POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy_directory
-        "$<TARGET_PROPERTY:ZoEngine,SOURCE_DIR>/${SHADER_DIR}"
-        "$<TARGET_PROPERTY:ZoEngine,BINARY_DIR>/$<CONFIGURATION>/${SHADER_DIR}"
-)
+add_dependencies(ZoEngine compile_shaders)
