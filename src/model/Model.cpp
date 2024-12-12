@@ -105,9 +105,9 @@ void Model::init()
     mVertexData.vertices[23].uv = glm::vec2(0.0, 1.0);
 
     // Bottom quad
-    mVertexData.vertices[24].position = vertex11;
-    mVertexData.vertices[25].position = vertex12;
-    mVertexData.vertices[26].position = vertex13;
+    mVertexData.vertices[24].position = vertex13;
+    mVertexData.vertices[25].position = vertex2;
+    mVertexData.vertices[26].position = vertex5;
     mVertexData.vertices[24].color = glm::vec3(0.0f, 0.0f, 1.0f);
     mVertexData.vertices[25].color = glm::vec3(0.0f, 1.0f, 1.0f);
     mVertexData.vertices[26].color = glm::vec3(1.0f, 1.0f, 0.0f);
@@ -115,8 +115,8 @@ void Model::init()
     mVertexData.vertices[25].uv = glm::vec2(1.0, 0.0);
     mVertexData.vertices[26].uv = glm::vec2(1.0, 1.0);
 
-    mVertexData.vertices[27].position = vertex11;
-    mVertexData.vertices[28].position = vertex13;
+    mVertexData.vertices[27].position = vertex13;
+    mVertexData.vertices[28].position = vertex5;
     mVertexData.vertices[29].position = vertex10;
     mVertexData.vertices[27].color = glm::vec3(0.0f, 0.0f, 1.0f);
     mVertexData.vertices[28].color = glm::vec3(1.0f, 1.0f, 0.0f);

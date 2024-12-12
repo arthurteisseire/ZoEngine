@@ -4,9 +4,27 @@
 #include <vulkan/vulkan.h>
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
+#include <glm/gtc/quaternion.hpp>
 #include <VkBootstrap.h>
 #include <vk_mem_alloc.h>
 
+struct Camera
+{
+    glm::vec3 position;
+    float yawAngle = 0.f;
+    float pitchAngle = 0.f;
+
+    [[nodiscard]] glm::quat GetOrientation() const
+    {
+        glm::vec3 upVector(0.f, 1.f, 0.f);
+        glm::quat yawQuat = glm::angleAxis(glm::radians(yawAngle), upVector);
+
+        glm::vec3 rightVector(1.f, 0.f, 0.f);
+        glm::quat pitchQuat = glm::angleAxis(glm::radians(pitchAngle), rightVector);
+
+        return yawQuat * pitchQuat;
+    }
+};
 
 struct MeshVertex
 {
@@ -85,6 +103,8 @@ struct VkRenderData
     VkDescriptorSet rdUBODescriptorSet = VK_NULL_HANDLE;
 
     VkDescriptorPool rdImguiDescriptorPool = VK_NULL_HANDLE;
+
+    Camera camera;
 };
 
 #endif //ZOENGINE_VKRENDERDATA_H

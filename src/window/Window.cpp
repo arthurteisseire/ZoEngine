@@ -62,7 +62,7 @@ bool Window::init(unsigned int width, unsigned int height, const std::string &ti
 //        thisWindow->handleMouseButtonEvents(button, action, mods);
 //    });
 
-    // Window close event
+    // Renderer events
     glfwSetWindowUserPointer(mWindow, mRenderer.get());
     glfwSetWindowSizeCallback(mWindow, [](GLFWwindow *window, int width, int height) {
         auto renderer = static_cast<VkRenderer *>(glfwGetWindowUserPointer(window));

@@ -29,6 +29,7 @@ private:
     GLFWwindow *mWindow = nullptr;
     std::unique_ptr<VkRenderer> mRenderer;
     std::unique_ptr<Model> mModel;
+    Camera camera;
 };
 
 #endif //ENGINE_WINDOW_H

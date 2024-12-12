@@ -19,6 +19,9 @@
 VkRenderer::VkRenderer(GLFWwindow *window)
 {
     mRenderData.rdWindow = window;
+    mRenderData.camera.position = glm::vec3(0.4f, 0.3f, 1.0f);
+    mRenderData.camera.yawAngle = 0.f;
+    mRenderData.camera.pitchAngle = 0.f;
 
     // Identity matrices
     mMatrices.viewMatrix = glm::mat4(1.0f);
@@ -585,21 +588,21 @@ bool VkRenderer::draw()
 
     // Set projection matrix
     const auto t = static_cast<float>(glfwGetTime());
-    glm::vec3 cameraPosition = glm::vec3(0.4f, 0.3f, 1.0f);
-    glm::vec3 cameraLookAtPosition = glm::vec3(0.0f, 0.0f, 0.0f);
-    glm::vec3 cameraUpVector = glm::vec3(0.0f, 1.0f, 0.0f);
+    glm::vec3 cameraPosition = mRenderData.camera.position;
+    glm::quat cameraOrientation = mRenderData.camera.GetOrientation();
 
     mMatrices.projectionMatrix = glm::perspective(glm::radians(90.0f), static_cast<float>(mRenderData.rdVkbSwapchain.extent.width) / static_cast<float>(mRenderData.rdVkbSwapchain.extent.height), 0.1f, 10.0f);
 
     glm::mat4 model = glm::mat4(1.0f);
 
     if (!mRenderData.mUseChangedShader) {
-        model = glm::rotate(glm::mat4(1.0f), -t, glm::vec3(0.0f, 0.0f, 1.0f));
+//        model = glm::rotate(glm::mat4(1.0f), -t, glm::vec3(0.0f, 0.0f, 1.0f));
     } else {
         model = glm::rotate(glm::mat4(1.0f), t, glm::vec3(0.0f, 0.0f, 1.0f));
     }
     // Set view matrix
-    mMatrices.viewMatrix = glm::lookAt(cameraPosition, cameraLookAtPosition, cameraUpVector) * model;
+    glm::mat4 viewMatrix = glm::mat4_cast(glm::conjugate(cameraOrientation)) * model;
+    mMatrices.viewMatrix = glm::translate(viewMatrix, -cameraPosition);
 
     // Begin render pass
     vkCmdBeginRenderPass(mRenderData.rdCommandBuffer, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
@@ -717,8 +720,66 @@ bool VkRenderer::draw()
 
 void VkRenderer::handleKeyEvents(int key, int scancode, int action, int mods)
 {
+    // Change shaders
+
     if (glfwGetKey(mRenderData.rdWindow, GLFW_KEY_SPACE) == GLFW_PRESS)
     {
         mRenderData.mUseChangedShader = !mRenderData.mUseChangedShader;
+    }
+
+
+    // Camera position
+
+    if (glfwGetKey(mRenderData.rdWindow, GLFW_KEY_D) == GLFW_PRESS)
+    {
+        glm::vec3 rightVector(1.f, 0.f, 0.f);
+        glm::vec3 cameraForward = mRenderData.camera.GetOrientation() * rightVector;
+        mRenderData.camera.position += cameraForward;
+    }
+    if (glfwGetKey(mRenderData.rdWindow, GLFW_KEY_A) == GLFW_PRESS)
+    {
+        glm::vec3 rightVector(1.f, 0.f, 0.f);
+        glm::vec3 cameraForward = mRenderData.camera.GetOrientation() * rightVector;
+        mRenderData.camera.position -= cameraForward;
+    }
+    if (glfwGetKey(mRenderData.rdWindow, GLFW_KEY_W) == GLFW_PRESS)
+    {
+        glm::vec3 forwardVector(0.f, 0.f, -1.f);
+        glm::vec3 cameraForward = mRenderData.camera.GetOrientation() * forwardVector;
+        mRenderData.camera.position += cameraForward;
+    }
+    if (glfwGetKey(mRenderData.rdWindow, GLFW_KEY_S) == GLFW_PRESS)
+    {
+        glm::vec3 forwardVector(0.f, 0.f, -1.f);
+        glm::vec3 cameraForward = mRenderData.camera.GetOrientation() * forwardVector;
+        mRenderData.camera.position -= cameraForward;
+    }
+    if (glfwGetKey(mRenderData.rdWindow, GLFW_KEY_PAGE_DOWN) == GLFW_PRESS)
+    {
+        mRenderData.camera.position.y += 0.5f;
+    }
+    if (glfwGetKey(mRenderData.rdWindow, GLFW_KEY_PAGE_UP) == GLFW_PRESS)
+    {
+        mRenderData.camera.position.y -= 0.5;
+    }
+
+
+    // Camera Orientation
+
+    if (glfwGetKey(mRenderData.rdWindow, GLFW_KEY_RIGHT) == GLFW_PRESS)
+    {
+        mRenderData.camera.yawAngle -= 1.f;
+    }
+    if (glfwGetKey(mRenderData.rdWindow, GLFW_KEY_LEFT) == GLFW_PRESS)
+    {
+        mRenderData.camera.yawAngle += 1.f;
+    }
+    if (glfwGetKey(mRenderData.rdWindow, GLFW_KEY_UP) == GLFW_PRESS)
+    {
+        mRenderData.camera.pitchAngle -= 1.f;
+    }
+    if (glfwGetKey(mRenderData.rdWindow, GLFW_KEY_DOWN) == GLFW_PRESS)
+    {
+        mRenderData.camera.pitchAngle += 1.f;
     }
 }
