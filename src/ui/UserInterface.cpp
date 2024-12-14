@@ -88,6 +88,9 @@ void UserInterface::createFrame(VkRenderData &renderData) const
         renderData.mUseChangedShader = !renderData.mUseChangedShader;
     }
 
+    ImGui::SliderFloat("Camera move speed", &renderData.camera.moveSpeed, 0.f, 20.f);
+    ImGui::SliderFloat("Camera rotation speed", &renderData.camera.rotateSpeed, 0.f, 360.f);
+
     ImGui::End();
 }
 

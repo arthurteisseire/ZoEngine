@@ -10,19 +10,44 @@
 
 struct Camera
 {
-    glm::vec3 position;
-    float yawAngle = 0.f;
-    float pitchAngle = 0.f;
+    // Position
+    glm::vec3 desiredMoveDirection;
+    glm::vec3 worldPosition;
+    float moveSpeed = 5.f; // units per second
+
+    // Orientation
+    glm::vec2 desiredRotationAngle;
+    glm::vec2 yawPitchAngles;
+    float rotateSpeed = 180.f; // degrees per seconds
+
+    void ApplyDesiredTransform(float dt)
+    {
+        ApplyDesiredMovement(dt);
+        ApplyDesiredOrientation(dt);
+    }
 
     [[nodiscard]] glm::quat GetOrientation() const
     {
-        glm::vec3 upVector(0.f, 1.f, 0.f);
-        glm::quat yawQuat = glm::angleAxis(glm::radians(yawAngle), upVector);
+        const glm::vec3 upVector(0.f, 1.f, 0.f);
+        const glm::quat yawQuat = glm::angleAxis(glm::radians(yawPitchAngles[0]), upVector);
 
-        glm::vec3 rightVector(1.f, 0.f, 0.f);
-        glm::quat pitchQuat = glm::angleAxis(glm::radians(pitchAngle), rightVector);
+        const glm::vec3 rightVector(1.f, 0.f, 0.f);
+        const glm::quat pitchQuat = glm::angleAxis(glm::radians(yawPitchAngles[1]), rightVector);
 
         return yawQuat * pitchQuat;
+    }
+
+private:
+    void ApplyDesiredMovement(float dt)
+    {
+        worldPosition += desiredMoveDirection * moveSpeed * dt;
+        desiredMoveDirection = glm::vec3();
+    }
+
+    void ApplyDesiredOrientation(float dt)
+    {
+        yawPitchAngles += desiredRotationAngle * rotateSpeed * dt;
+        desiredRotationAngle = glm::vec2();
     }
 };
 
@@ -105,6 +130,8 @@ struct VkRenderData
     VkDescriptorPool rdImguiDescriptorPool = VK_NULL_HANDLE;
 
     Camera camera;
+    float lastTickTime;
+    float deltaTime;
 };
 
 #endif //ZOENGINE_VKRENDERDATA_H
