@@ -68,20 +68,18 @@ void UserInterface::createFrame(VkRenderData &renderData) const
 
     ImGui::Begin("Control", nullptr, imguiWindowFlags);
 
-    ImGui::Text("Triangles:");
-    ImGui::SameLine();
-    ImGui::Text("%s", std::to_string(renderData.mTriangleCount).c_str());
+    ImGui::Text("Triangles: %s", std::to_string(renderData.mTriangleCount).c_str());
 
     std::string windowDims = std::to_string(renderData.rdWidth) + "x" + std::to_string(renderData.rdHeight);
-    ImGui::Text("Window Dimensions:");
-    ImGui::SameLine();
-    ImGui::Text("%s", windowDims.c_str());
+    ImGui::Text("Window Dimensions: %s", windowDims.c_str());
 
     std::string imgWindowPos = std::to_string(static_cast<int>(ImGui::GetWindowPos().x)) + "/" +
                                std::to_string(static_cast<int>(ImGui::GetWindowPos().y));
-    ImGui::Text("ImGui Window Position:");
-    ImGui::SameLine();
-    ImGui::Text("%s", imgWindowPos.c_str());
+    ImGui::Text("ImGui Window Position: %s", imgWindowPos.c_str());
+
+    ImGui::Text("LastTickTime: %.3f", renderData.lastTickTime);
+    ImGui::Text("DeltaTime: %.3f", renderData.deltaTime);
+    ImGui::Text("FPS: %.3f", renderData.deltaTime != 0 ? 1.0f / renderData.deltaTime : 0.f);
 
     if (ImGui::Button("Change shaders"))
     {
