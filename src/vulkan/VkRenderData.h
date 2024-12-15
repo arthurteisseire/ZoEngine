@@ -20,7 +20,7 @@ struct Camera
     // Orientation
     glm::vec2 desiredRotationAngle;
     glm::vec2 yawPitchAngles;
-    float rotateSpeed = 180.f; // degrees per seconds
+    float rotateSpeed = 90.f; // degrees per seconds
 
     // Inputs
     bool mouseLock = false;
@@ -46,7 +46,6 @@ private:
     void ApplyDesiredMovement(float dt)
     {
         worldPosition += desiredMoveDirection * moveSpeed * dt;
-        desiredMoveDirection = glm::vec3();
     }
 
     void ApplyDesiredOrientation(float dt)
@@ -54,7 +53,6 @@ private:
         yawPitchAngles += desiredRotationAngle * rotateSpeed * dt;
         yawPitchAngles[0] = NormalizeAngle(yawPitchAngles[0]);
         yawPitchAngles[1] = std::clamp(yawPitchAngles[1], -89.9f, 89.9f);
-        desiredRotationAngle = glm::vec2();
     }
 
     static float NormalizeAngle(const float angle)

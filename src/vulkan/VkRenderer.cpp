@@ -596,15 +596,12 @@ bool VkRenderer::draw()
 
     glm::mat4 model = glm::mat4(1.0f);
 
-    if (!mRenderData.mUseChangedShader)
-    {
-//        model = glm::rotate(glm::mat4(1.0f), -currentTime, glm::vec3(0.0f, 0.0f, 1.0f));
-    } else
+    if (mRenderData.mUseChangedShader)
     {
         model = glm::rotate(glm::mat4(1.0f), currentTime, glm::vec3(0.0f, 0.0f, 1.0f));
     }
-    // Set view matrix
 
+    // Set view matrix
     Camera& camera = mRenderData.mCamera;
     camera.ApplyDesiredTransform(mRenderData.deltaTime);
     glm::mat4 viewMatrix = glm::mat4_cast(glm::conjugate(camera.GetOrientation())) * model;
