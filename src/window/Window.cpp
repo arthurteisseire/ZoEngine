@@ -1,6 +1,7 @@
 #include <string>
 #include <vector>
 #include <imgui.h>
+#include <imgui/backends/imgui_impl_glfw.h>
 #include "Window.h"
 #include "Logger.h"
 
@@ -48,22 +49,31 @@ bool Window::init(unsigned int width, unsigned int height, const std::string &ti
     mModel = std::make_unique<Model>();
     mModel->init();
 
-    // Window close event
+
+    // Window events
+
     glfwSetWindowUserPointer(mWindow, this);
     glfwSetWindowCloseCallback(mWindow, [](GLFWwindow *window) {
         auto thisWindow = static_cast<Window *>(glfwGetWindowUserPointer(window));
         thisWindow->handleWindowCloseEvents();
     });
 
-    // Capture Mouse events
-    // Commented to avoid capturing ImGui events
-//    glfwSetMouseButtonCallback(mWindow, [](GLFWwindow *window, int button, int action, int mods) {
-//        auto thisWindow = static_cast<Window *>(glfwGetWindowUserPointer(window));
-//        thisWindow->handleMouseButtonEvents(button, action, mods);
-//    });
 
     // Renderer events
+
     glfwSetWindowUserPointer(mWindow, mRenderer.get());
+
+    glfwSetMouseButtonCallback(mWindow, [](GLFWwindow *window, int button, int action, int mods) {
+        auto thisWindow = static_cast<VkRenderer *>(glfwGetWindowUserPointer(window));
+        thisWindow->handleMouseButtonEvents(button, action, mods);
+        ImGui_ImplGlfw_MouseButtonCallback(window, button, action, mods); // Forward to ImGui
+    });
+
+    glfwSetCursorPosCallback(mWindow, [](GLFWwindow *window, double x, double y) {
+        auto thisWindow = static_cast<VkRenderer *>(glfwGetWindowUserPointer(window));
+        thisWindow->handleMousePositionEvents(x, y);
+    });
+
     glfwSetWindowSizeCallback(mWindow, [](GLFWwindow *window, int width, int height) {
         auto renderer = static_cast<VkRenderer *>(glfwGetWindowUserPointer(window));
         renderer->setSize(width, height);

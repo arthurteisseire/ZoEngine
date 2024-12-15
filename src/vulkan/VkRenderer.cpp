@@ -19,7 +19,7 @@
 VkRenderer::VkRenderer(GLFWwindow *window)
 {
     mRenderData.rdWindow = window;
-    mRenderData.camera.worldPosition = glm::vec3(0.4f, 0.3f, 1.0f);
+    mRenderData.mCamera.worldPosition = glm::vec3(0.4f, 0.3f, 1.0f);
 
     // Identity matrices
     mMatrices.viewMatrix = glm::mat4(1.0f);
@@ -605,7 +605,7 @@ bool VkRenderer::draw()
     }
     // Set view matrix
 
-    Camera& camera = mRenderData.camera;
+    Camera& camera = mRenderData.mCamera;
     camera.ApplyDesiredTransform(mRenderData.deltaTime);
     glm::mat4 viewMatrix = glm::mat4_cast(glm::conjugate(camera.GetOrientation())) * model;
     mMatrices.viewMatrix = glm::translate(viewMatrix, -camera.worldPosition);
@@ -739,62 +739,95 @@ void VkRenderer::handleKeyEvents(int key, int scancode, int action, int mods)
 
     // Camera position
 
-    mRenderData.camera.desiredMoveDirection = glm::vec3();
+    mRenderData.mCamera.desiredMoveDirection = glm::vec3();
     if (glfwGetKey(mRenderData.rdWindow, GLFW_KEY_D) == GLFW_PRESS)
     {
         glm::vec3 worldRightVector(1.f, 0.f, 0.f);
-        glm::vec3 cameraRightVector = mRenderData.camera.GetOrientation() * worldRightVector;
-        mRenderData.camera.desiredMoveDirection = cameraRightVector;
+        glm::vec3 cameraRightVector = mRenderData.mCamera.GetOrientation() * worldRightVector;
+        mRenderData.mCamera.desiredMoveDirection = cameraRightVector;
     }
     if (glfwGetKey(mRenderData.rdWindow, GLFW_KEY_A) == GLFW_PRESS)
     {
         glm::vec3 worldRightVector(1.f, 0.f, 0.f);
-        glm::vec3 cameraRightVector = mRenderData.camera.GetOrientation() * worldRightVector;
-        mRenderData.camera.desiredMoveDirection = -cameraRightVector;
+        glm::vec3 cameraRightVector = mRenderData.mCamera.GetOrientation() * worldRightVector;
+        mRenderData.mCamera.desiredMoveDirection = -cameraRightVector;
     }
     if (glfwGetKey(mRenderData.rdWindow, GLFW_KEY_W) == GLFW_PRESS)
     {
         glm::vec3 worldForwardVector(0.f, 0.f, -1.f);
-        glm::vec3 cameraForwardVector = mRenderData.camera.GetOrientation() * worldForwardVector;
-        mRenderData.camera.desiredMoveDirection = cameraForwardVector;
+        glm::vec3 cameraForwardVector = mRenderData.mCamera.GetOrientation() * worldForwardVector;
+        mRenderData.mCamera.desiredMoveDirection = cameraForwardVector;
     }
     if (glfwGetKey(mRenderData.rdWindow, GLFW_KEY_S) == GLFW_PRESS)
     {
         glm::vec3 worldForwardVector(0.f, 0.f, -1.f);
-        glm::vec3 cameraForwardVector = mRenderData.camera.GetOrientation() * worldForwardVector;
-        mRenderData.camera.desiredMoveDirection = -cameraForwardVector;
+        glm::vec3 cameraForwardVector = mRenderData.mCamera.GetOrientation() * worldForwardVector;
+        mRenderData.mCamera.desiredMoveDirection = -cameraForwardVector;
     }
     if (glfwGetKey(mRenderData.rdWindow, GLFW_KEY_PAGE_DOWN) == GLFW_PRESS)
     {
-        mRenderData.camera.desiredMoveDirection.y += 1.f;
+        mRenderData.mCamera.desiredMoveDirection.y += 1.f;
     }
     if (glfwGetKey(mRenderData.rdWindow, GLFW_KEY_PAGE_UP) == GLFW_PRESS)
     {
-        mRenderData.camera.desiredMoveDirection.y -= 1.f;
+        mRenderData.mCamera.desiredMoveDirection.y -= 1.f;
     }
 
 
     // Camera Orientation
 
-    mRenderData.camera.desiredRotationAngle = glm::vec2();
+    mRenderData.mCamera.desiredRotationAngle = glm::vec2();
     if (glfwGetKey(mRenderData.rdWindow, GLFW_KEY_RIGHT) == GLFW_PRESS)
     {
-//        mRenderData.camera.yawAngle -= 1.f;
-        mRenderData.camera.desiredRotationAngle[0] = -1.f;
+        mRenderData.mCamera.desiredRotationAngle[0] = -1.f;
     }
     if (glfwGetKey(mRenderData.rdWindow, GLFW_KEY_LEFT) == GLFW_PRESS)
     {
-//        mRenderData.camera.yawAngle += 1.f;
-        mRenderData.camera.desiredRotationAngle[0] = 1.f;
+        mRenderData.mCamera.desiredRotationAngle[0] = 1.f;
     }
     if (glfwGetKey(mRenderData.rdWindow, GLFW_KEY_UP) == GLFW_PRESS)
     {
-        mRenderData.camera.desiredRotationAngle[1] = -1.f;
-//        mRenderData.camera.pitchAngle -= 1.f;
+        mRenderData.mCamera.desiredRotationAngle[1] = -1.f;
     }
     if (glfwGetKey(mRenderData.rdWindow, GLFW_KEY_DOWN) == GLFW_PRESS)
     {
-        mRenderData.camera.desiredRotationAngle[1] = 1.f;
-//        mRenderData.camera.pitchAngle += 1.f;
+        mRenderData.mCamera.desiredRotationAngle[1] = 1.f;
+    }
+}
+
+void VkRenderer::handleMouseButtonEvents(int button, int action, int mods)
+{
+    if (button == GLFW_MOUSE_BUTTON_RIGHT && action == GLFW_PRESS)
+    {
+        mRenderData.mCamera.mouseLock = true;
+        glfwSetInputMode(mRenderData.rdWindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+        glfwSetInputMode(mRenderData.rdWindow, GLFW_RAW_MOUSE_MOTION, GLFW_TRUE);
+    }
+    if (button == GLFW_MOUSE_BUTTON_RIGHT && action == GLFW_RELEASE)
+    {
+        mRenderData.mCamera.mouseLock = false;
+        glfwSetInputMode(mRenderData.rdWindow, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+        mRenderData.mMouse.lastPos.reset();
+    }
+}
+
+void VkRenderer::handleMousePositionEvents(double x, double y)
+{
+    if (mRenderData.mCamera.mouseLock)
+    {
+        if (mRenderData.mMouse.lastPos.has_value())
+        {
+            glm::vec2 currentMousePos(x, y);
+            glm::vec2 deltaPos = currentMousePos - mRenderData.mMouse.lastPos.value();
+            mRenderData.mMouse.lastPos = currentMousePos;
+
+            Camera& camera = mRenderData.mCamera;
+            camera.yawPitchAngles[0] -= deltaPos[0] / 10.f;
+            camera.yawPitchAngles[1] += deltaPos[1] / 10.f;
+        }
+        else
+        {
+            mRenderData.mMouse.lastPos = glm::vec2(x, y);
+        }
     }
 }

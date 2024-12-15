@@ -7,6 +7,8 @@
 #include <glm/gtc/quaternion.hpp>
 #include <VkBootstrap.h>
 #include <vk_mem_alloc.h>
+#include <optional>
+#include <algorithm>
 
 struct Camera
 {
@@ -19,6 +21,9 @@ struct Camera
     glm::vec2 desiredRotationAngle;
     glm::vec2 yawPitchAngles;
     float rotateSpeed = 180.f; // degrees per seconds
+
+    // Inputs
+    bool mouseLock = false;
 
     void ApplyDesiredTransform(float dt)
     {
@@ -47,8 +52,25 @@ private:
     void ApplyDesiredOrientation(float dt)
     {
         yawPitchAngles += desiredRotationAngle * rotateSpeed * dt;
+        yawPitchAngles[0] = NormalizeAngle(yawPitchAngles[0]);
+        yawPitchAngles[1] = std::clamp(yawPitchAngles[1], -89.9f, 89.9f);
         desiredRotationAngle = glm::vec2();
     }
+
+    static float NormalizeAngle(const float angle)
+    {
+        float normalizedAngle = std::fmod(angle, 360.f);
+        if (angle < 0.f)
+        {
+            normalizedAngle += 360.f;
+        }
+        return normalizedAngle;
+    }
+};
+
+struct Mouse
+{
+    std::optional<glm::vec2> lastPos;
 };
 
 struct MeshVertex
@@ -129,7 +151,8 @@ struct VkRenderData
 
     VkDescriptorPool rdImguiDescriptorPool = VK_NULL_HANDLE;
 
-    Camera camera;
+    Mouse mMouse;
+    Camera mCamera;
     float lastTickTime;
     float deltaTime;
 };

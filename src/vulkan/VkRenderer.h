@@ -19,6 +19,8 @@ public:
     bool draw();
     void cleanup();
     void handleKeyEvents(int key, int scancode, int action, int mods);
+    void handleMouseButtonEvents(int button, int action, int mods);
+    void handleMousePositionEvents(double x, double y);
 
 private:
     VkRenderData mRenderData{};

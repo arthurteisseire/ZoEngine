@@ -9,17 +9,17 @@ bool UserInterface::init(VkRenderData &renderData) const
     ImGui::CreateContext();
 
     VkDescriptorPoolSize imguiPoolSizes[] = {
-            {VK_DESCRIPTOR_TYPE_SAMPLER, 1000},
+            {VK_DESCRIPTOR_TYPE_SAMPLER,                1000},
             {VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1000},
-            {VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, 1000},
-            {VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 1000},
-            {VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER, 1000},
-            {VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER, 1000},
-            {VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1000},
-            {VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1000},
+            {VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,          1000},
+            {VK_DESCRIPTOR_TYPE_STORAGE_IMAGE,          1000},
+            {VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER,   1000},
+            {VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER,   1000},
+            {VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,         1000},
+            {VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,         1000},
             {VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, 1000},
             {VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC, 1000},
-            {VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, 1000}
+            {VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT,       1000}
     };
 
     VkDescriptorPoolCreateInfo imguiPoolInfo = {};
@@ -29,12 +29,14 @@ bool UserInterface::init(VkRenderData &renderData) const
     imguiPoolInfo.poolSizeCount = std::size(imguiPoolSizes);
     imguiPoolInfo.pPoolSizes = imguiPoolSizes;
 
-    if (vkCreateDescriptorPool(renderData.rdVkbDevice.device, &imguiPoolInfo, nullptr, &renderData.rdImguiDescriptorPool)) {
+    if (vkCreateDescriptorPool(renderData.rdVkbDevice.device, &imguiPoolInfo, nullptr,
+                               &renderData.rdImguiDescriptorPool))
+    {
         Logger::error("%s error: could not init ImGui descriptor pool \n", __FUNCTION__);
         return false;
     }
 
-    ImGui_ImplGlfw_InitForVulkan(renderData.rdWindow, true);
+    ImGui_ImplGlfw_InitForVulkan(renderData.rdWindow, false);
 
     ImGui_ImplVulkan_InitInfo imguiInitInfo = {};
     imguiInitInfo.Instance = renderData.rdVkbInstance.instance;
@@ -86,8 +88,20 @@ void UserInterface::createFrame(VkRenderData &renderData) const
         renderData.mUseChangedShader = !renderData.mUseChangedShader;
     }
 
-    ImGui::SliderFloat("Camera move speed", &renderData.camera.moveSpeed, 0.f, 20.f);
-    ImGui::SliderFloat("Camera rotation speed", &renderData.camera.rotateSpeed, 0.f, 360.f);
+    if (ImGui::TreeNode("Camera"))
+    {
+        ImGui::Text(
+                "x=%.3f, y=%.3f, z=%.3f",
+                renderData.mCamera.worldPosition.x,
+                renderData.mCamera.worldPosition.y,
+                renderData.mCamera.worldPosition.z
+        );
+        ImGui::Text("yaw=%.3f, pitch=%.3f", renderData.mCamera.yawPitchAngles[0], renderData.mCamera.yawPitchAngles[1]);
+        ImGui::SliderFloat("move speed", &renderData.mCamera.moveSpeed, 0.f, 20.f);
+        ImGui::SliderFloat("rotation speed", &renderData.mCamera.rotateSpeed, 0.f, 360.f);
+
+        ImGui::TreePop();
+    }
 
     ImGui::End();
 }
