@@ -12,7 +12,7 @@
 #include <GLFW/glfw3.h>
 
 #include "VkRenderer.h"
-#include "model/Model.h"
+#include "model/CustomCube.h"
 
 class Window
 {
@@ -28,7 +28,7 @@ private:
 
     GLFWwindow *mWindow = nullptr;
     std::unique_ptr<VkRenderer> mRenderer;
-    std::unique_ptr<Model> mModel;
+    std::unique_ptr<CustomCube> mModel;
     Camera camera;
 };
 

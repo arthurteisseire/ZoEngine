@@ -1,7 +1,7 @@
-#include "Model.h"
+#include "CustomCube.h"
 #include "Logger.h"
 
-void Model::init()
+void CustomCube::init()
 {
     mVertexData.vertices.resize(36);
 
@@ -154,7 +154,7 @@ void Model::init()
     Logger::info("%s: loaded %d vertices\n", __FUNCTION__, mVertexData.vertices.size());
 }
 
-BasicMesh Model::getVertexData()
+BasicMesh CustomCube::getVertexData()
 {
     return mVertexData;
 }

@@ -1,10 +1,10 @@
-#ifndef ZOENGINE_MODEL_H
-#define ZOENGINE_MODEL_H
+#ifndef ZOENGINE_CUSTOMCUBE_H
+#define ZOENGINE_CUSTOMCUBE_H
 
 
 #include "VkRenderData.h"
 
-class Model
+class CustomCube
 {
 public:
     void init();
@@ -16,4 +16,4 @@ private:
 };
 
 
-#endif //ZOENGINE_MODEL_H
+#endif //ZOENGINE_CUSTOMCUBE_H

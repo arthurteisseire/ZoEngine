@@ -46,7 +46,7 @@ bool Window::init(unsigned int width, unsigned int height, const std::string &ti
         return false;
     }
 
-    mModel = std::make_unique<Model>();
+    mModel = std::make_unique<CustomCube>();
     mModel->init();
 
 

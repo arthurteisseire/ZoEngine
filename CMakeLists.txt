@@ -10,6 +10,11 @@ find_package(glm REQUIRED)
 # Define the executable
 file(GLOB_RECURSE MyCppSources src/*.cpp)
 
+# Tinygltf
+file(GLOB TinyGltfSources
+        ${CMAKE_CURRENT_SOURCE_DIR}/library/tiny_gltf/tiny_gltf.cc
+)
+
 find_path(IMGUI_BASE_DIR NAMES imgui/imgui.h HINTS ${CMAKE_INCLUDE_PATH})
 if (!IMGUI_BASE_DIR)
     message("Can't find imgui include dir in CMAKE_INCLUDE_PATH: ${CMAKE_INCLUDE_PATH}")
@@ -24,6 +29,7 @@ file(GLOB IMGUI_SOURCES
 add_executable(ZoEngine
         ${MyCppSources}
         ${IMGUI_SOURCES}
+        ${TinyGltfSources}
 )
 
 
@@ -36,6 +42,7 @@ target_include_directories(ZoEngine PRIVATE
         $ENV{STB_INCLUDE_PATH}
         ${IMGUI_DIR}
         ${CMAKE_INCLUDE_PATH}
+        ${CMAKE_CURRENT_SOURCE_DIR}/library/tiny_gltf
         ${CMAKE_CURRENT_SOURCE_DIR}/src
         ${CMAKE_CURRENT_SOURCE_DIR}/src/model
         ${CMAKE_CURRENT_SOURCE_DIR}/src/tools
