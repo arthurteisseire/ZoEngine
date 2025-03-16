@@ -4,6 +4,8 @@
 #include <imgui/backends/imgui_impl_glfw.h>
 #include "Window.h"
 #include "Logger.h"
+#include "GLTFLoader.h"
+
 
 
 bool Window::init(unsigned int width, unsigned int height, const std::string &title)
@@ -49,6 +51,12 @@ bool Window::init(unsigned int width, unsigned int height, const std::string &ti
     mModel = std::make_unique<CustomCube>();
     mModel->init();
 
+    std::optional<VMesh> oVMesh = GLTFLoader::LoadGLTF("../resource/xbot/xbot.gltf");
+    if (oVMesh.has_value())
+    {
+        mModelGltf = std::make_unique<VMesh>(std::move(oVMesh.value()));
+    }
+
 
     // Window events
 
@@ -89,7 +97,9 @@ bool Window::init(unsigned int width, unsigned int height, const std::string &ti
 
 void Window::mainLoop()
 {
-    mRenderer->uploadData(mModel->getVertexData());
+    mRenderer->uploadBasicMesh(mModel->getVertexData());
+    mRenderer->uploadVMesh(*mModelGltf);
+    mRenderer->uploadIndexBuffer(*mModelGltf);
 
     while (!glfwWindowShouldClose(mWindow))
     {

@@ -15,7 +15,9 @@ public:
     explicit VkRenderer(GLFWwindow *window);
     bool init(unsigned int width, unsigned int height);
     void setSize(unsigned int width, unsigned int height);
-    bool uploadData(BasicMesh vertexData);
+    bool uploadBasicMesh(const BasicMesh& vertexData);
+    bool uploadVMesh(const VMesh& vertexData);
+    bool uploadIndexBuffer(const VMesh& vMesh);
     bool draw();
     void cleanup();
     void handleKeyEvents(int key, int scancode, int action, int mods);
@@ -31,6 +33,9 @@ private:
 
     VkBuffer mVertexBuffer;
     VmaAllocation mVertexBufferAlloc;
+
+    VkBuffer mIndexBuffer;
+    VmaAllocation mIndexBufferAlloc;
 
     VkUploadMatrices mMatrices{};
 

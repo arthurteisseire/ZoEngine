@@ -42,26 +42,26 @@ bool Pipeline::init(VkRenderData &renderData,
 
     VkVertexInputBindingDescription mainBinding{};
     mainBinding.binding = 0;
-    mainBinding.stride = sizeof(MeshVertex);
+    mainBinding.stride = sizeof(VVertex);
     mainBinding.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
 
     VkVertexInputAttributeDescription positionAttribute{};
     positionAttribute.binding = 0;
     positionAttribute.location = 0;
     positionAttribute.format = VK_FORMAT_R32G32B32_SFLOAT;
-    positionAttribute.offset = offsetof(MeshVertex, position);
+    positionAttribute.offset = offsetof(VVertex, position);
 
     VkVertexInputAttributeDescription colorAttribute{};
     colorAttribute.binding = 0;
     colorAttribute.location = 1;
     colorAttribute.format = VK_FORMAT_R32G32B32_SFLOAT;
-    colorAttribute.offset = offsetof(MeshVertex, color);
+    colorAttribute.offset = offsetof(VVertex, normal);
 
     VkVertexInputAttributeDescription uvAttribute{};
     uvAttribute.binding = 0;
     uvAttribute.location = 2;
     uvAttribute.format = VK_FORMAT_R32G32_SFLOAT;
-    uvAttribute.offset = offsetof(MeshVertex, uv);
+    uvAttribute.offset = offsetof(VVertex, texcoord);
 
     VkVertexInputAttributeDescription attributes[] = {positionAttribute, colorAttribute, uvAttribute};
 

@@ -482,7 +482,7 @@ void VkRenderer::setSize(unsigned int width, unsigned int height)
     Logger::info("%s: resized window to %ix%i\n", __FUNCTION__, width, height);
 }
 
-bool VkRenderer::uploadData(BasicMesh vertexData)
+bool VkRenderer::uploadBasicMesh(const BasicMesh &vertexData)
 {
     /* needs to be split in buffer alloc and upload */
 
@@ -508,6 +508,148 @@ bool VkRenderer::uploadData(BasicMesh vertexData)
 
     mRenderData.mTriangleCount = vertexData.vertices.size() / 3;
 
+    return true;
+}
+
+bool VkRenderer::uploadVMesh(const VMesh &vMesh)
+{
+    /* needs to be split in buffer alloc and upload */
+
+    VkBufferCreateInfo bufferInfo{};
+    bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+    bufferInfo.size = vMesh.vertices.size() * sizeof(MeshVertex);
+    bufferInfo.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
+
+    VmaAllocationCreateInfo vmaAllocInfo{};
+    vmaAllocInfo.usage = VMA_MEMORY_USAGE_CPU_TO_GPU;
+
+    if (vmaCreateBuffer(mRenderData.rdAllocator, &bufferInfo, &vmaAllocInfo, &mVertexBuffer, &mVertexBufferAlloc,
+                        nullptr) != VK_SUCCESS)
+    {
+        Logger::info("%s error: could not allocate vertex buffer via VMA\n", __FUNCTION__);
+        return false;
+    }
+
+    void *data;
+    vmaMapMemory(mRenderData.rdAllocator, mVertexBufferAlloc, &data);
+    std::memcpy(data, vMesh.vertices.data(), vMesh.vertices.size() * sizeof(MeshVertex));
+    vmaUnmapMemory(mRenderData.rdAllocator, mVertexBufferAlloc);
+
+    mRenderData.mTriangleCount = vMesh.vertices.size() / 3;
+
+    return true;
+}
+
+static void copyBuffer(VkDevice device, VkCommandPool commandPool, VkQueue transferQueue,
+                       VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size)
+{
+    // Allocate a one-time command buffer.
+    VkCommandBufferAllocateInfo allocInfo{};
+    allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+    allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+    allocInfo.commandPool = commandPool;
+    allocInfo.commandBufferCount = 1;
+
+    VkCommandBuffer commandBuffer;
+    if (vkAllocateCommandBuffers(device, &allocInfo, &commandBuffer) != VK_SUCCESS)
+    {
+        throw std::runtime_error("Failed to allocate command buffer for copy operation!");
+    }
+
+    // Begin recording the command buffer.
+    VkCommandBufferBeginInfo beginInfo{};
+    beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+    beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+
+    if (vkBeginCommandBuffer(commandBuffer, &beginInfo) != VK_SUCCESS)
+    {
+        throw std::runtime_error("Failed to begin recording command buffer!");
+    }
+
+    // Specify the region to copy.
+    VkBufferCopy copyRegion{};
+    copyRegion.srcOffset = 0; // Optional
+    copyRegion.dstOffset = 0; // Optional
+    copyRegion.size = size;
+    vkCmdCopyBuffer(commandBuffer, srcBuffer, dstBuffer, 1, &copyRegion);
+
+    // End recording.
+    if (vkEndCommandBuffer(commandBuffer) != VK_SUCCESS)
+    {
+        throw std::runtime_error("Failed to record command buffer!");
+    }
+
+    // Submit the command buffer and wait for it to finish.
+    VkSubmitInfo submitInfo{};
+    submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+    submitInfo.commandBufferCount = 1;
+    submitInfo.pCommandBuffers = &commandBuffer;
+
+    if (vkQueueSubmit(transferQueue, 1, &submitInfo, VK_NULL_HANDLE) != VK_SUCCESS)
+    {
+        throw std::runtime_error("Failed to submit copy command buffer!");
+    }
+    vkQueueWaitIdle(transferQueue);
+
+    // Clean up the command buffer.
+    vkFreeCommandBuffers(device, commandPool, 1, &commandBuffer);
+}
+
+bool VkRenderer::uploadIndexBuffer(const VMesh &vMesh)
+{
+    // --- Create a staging buffer using VMA ---
+    VkBuffer stagingBuffer;
+    VmaAllocation stagingAllocation;
+
+    VkBufferCreateInfo stagingBufferInfo = {};
+    stagingBufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+    stagingBufferInfo.size = vMesh.indices.size();
+    stagingBufferInfo.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
+
+    VmaAllocationCreateInfo stagingAllocInfo = {};
+    stagingAllocInfo.usage = VMA_MEMORY_USAGE_CPU_ONLY;
+
+    if (vmaCreateBuffer(mRenderData.rdAllocator, &stagingBufferInfo, &stagingAllocInfo,
+                        &stagingBuffer, &stagingAllocation, nullptr) != VK_SUCCESS)
+    {
+        Logger::error("Failed to create staging buffer!\n", __FUNCTION__);
+        return false;
+    }
+
+// Map and copy index data to the staging buffer
+    void *stagingData = nullptr;
+    vmaMapMemory(mRenderData.rdAllocator, stagingAllocation, &stagingData);
+    memcpy(stagingData, vMesh.indices.data(), vMesh.indices.size());
+    vmaUnmapMemory(mRenderData.rdAllocator, stagingAllocation);
+
+// --- Create the GPU-local index buffer using VMA ---
+    VkBufferCreateInfo indexBufferInfo = {};
+    indexBufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+    indexBufferInfo.size = vMesh.indices.size();
+    indexBufferInfo.usage = VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT;
+
+    VmaAllocationCreateInfo indexAllocInfo = {};
+    indexAllocInfo.usage = VMA_MEMORY_USAGE_GPU_ONLY;
+
+    if (vmaCreateBuffer(mRenderData.rdAllocator, &indexBufferInfo, &indexAllocInfo,
+                        &mIndexBuffer, &mIndexBufferAlloc, nullptr) != VK_SUCCESS)
+    {
+        Logger::error("Failed to create GPU index buffer!\n", __FUNCTION__);
+        return false;
+    }
+
+// --- Copy data from staging buffer to GPU index buffer ---
+// This function should record and submit a command buffer that copies from one buffer to the other.
+//    copyBuffer(stagingBuffer, vkIndexBuffer, vMesh.indices.size());
+    copyBuffer(mRenderData.rdVkbDevice, mRenderData.rdCommandPool, mRenderData.rdGraphicsQueue, stagingBuffer,
+               mIndexBuffer, vMesh.indices.size());
+
+// Clean up the staging buffer
+    vmaDestroyBuffer(mRenderData.rdAllocator, stagingBuffer, stagingAllocation);
+    mRenderData.mIndexType = vMesh.indexType;
+    mRenderData.mIndexCount = vMesh.indices.size() /
+                              (mRenderData.mIndexType == VK_INDEX_TYPE_UINT16 ? sizeof(uint16_t)
+                                                                              : sizeof(uint32_t));
     return true;
 }
 
@@ -589,7 +731,8 @@ bool VkRenderer::draw()
 
     mMatrices.projectionMatrix = glm::perspective(
             glm::radians(90.0f),
-            static_cast<float>(mRenderData.rdVkbSwapchain.extent.width) / static_cast<float>(mRenderData.rdVkbSwapchain.extent.height),
+            static_cast<float>(mRenderData.rdVkbSwapchain.extent.width) /
+            static_cast<float>(mRenderData.rdVkbSwapchain.extent.height),
             0.1f,
             10.0f
     );
@@ -602,7 +745,7 @@ bool VkRenderer::draw()
     }
 
     // Set view matrix
-    Camera& camera = mRenderData.mCamera;
+    Camera &camera = mRenderData.mCamera;
     camera.ApplyDesiredTransform(mRenderData.deltaTime);
     glm::mat4 viewMatrix = glm::mat4_cast(glm::conjugate(camera.GetOrientation())) * model;
     mMatrices.viewMatrix = glm::translate(viewMatrix, -camera.worldPosition);
@@ -635,8 +778,6 @@ bool VkRenderer::draw()
     vkCmdSetScissor(mRenderData.rdCommandBuffer, 0, 1, &scissors);
 
     // The triangle drawing itself
-    VkDeviceSize offset = 0;
-    vkCmdBindVertexBuffers(mRenderData.rdCommandBuffer, 0, 1, &mVertexBuffer, &offset);
     vkCmdBindDescriptorSets(
             mRenderData.rdCommandBuffer,
             VK_PIPELINE_BIND_POINT_GRAPHICS,
@@ -658,7 +799,13 @@ bool VkRenderer::draw()
             nullptr
     );
 
-    vkCmdDraw(mRenderData.rdCommandBuffer, mRenderData.mTriangleCount * 3, 1, 0, 0);
+    VkDeviceSize offset = 0;
+    vkCmdBindVertexBuffers(mRenderData.rdCommandBuffer, 0, 1, &mVertexBuffer, &offset);
+    // Draw using indices now
+    // vkCmdDraw(mRenderData.rdCommandBuffer, mRenderData.mTriangleCount * 3, 1, 0, 0);
+    vkCmdBindIndexBuffer(mRenderData.rdCommandBuffer, mIndexBuffer, 0, mRenderData.mIndexType);
+    vkCmdDrawIndexed(mRenderData.rdCommandBuffer, mRenderData.mIndexCount,
+                     1, 0, 0, 0);
 
     // imgui overlay
     mUserInterface.createFrame(mRenderData);
@@ -818,11 +965,10 @@ void VkRenderer::handleMousePositionEvents(double x, double y)
             glm::vec2 deltaPos = currentMousePos - mRenderData.mMouse.lastPos.value();
             mRenderData.mMouse.lastPos = currentMousePos;
 
-            Camera& camera = mRenderData.mCamera;
+            Camera &camera = mRenderData.mCamera;
             camera.yawPitchAngles[0] -= deltaPos[0] / 10.f;
             camera.yawPitchAngles[1] += deltaPos[1] / 10.f;
-        }
-        else
+        } else
         {
             mRenderData.mMouse.lastPos = glm::vec2(x, y);
         }

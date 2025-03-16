@@ -71,6 +71,21 @@ struct Mouse
     std::optional<glm::vec2> lastPos;
 };
 
+struct VVertex
+{
+    glm::vec3 position;
+    glm::vec3 normal;
+    glm::vec2 texcoord;
+};
+
+struct VMesh
+{
+    std::vector<VVertex> vertices;
+
+    VkIndexType indexType;
+    std::vector<uint8_t> indices;
+};
+
 struct MeshVertex
 {
     glm::vec3 position;
@@ -96,6 +111,9 @@ struct VkRenderData
     std::size_t mTriangleCount = 0;
     int rdWidth = 0;
     int rdHeight = 0;
+
+    std::size_t mIndexCount = 0;
+    VkIndexType mIndexType;
 
     bool mUseChangedShader = false;
 
