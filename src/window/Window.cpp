@@ -48,8 +48,8 @@ bool Window::init(unsigned int width, unsigned int height, const std::string &ti
         return false;
     }
 
-    mModel = std::make_unique<CustomCube>();
-    mModel->init();
+//    mModel = std::make_unique<CustomCube>();
+//    mModel->init();
 
     std::optional<VMesh> oVMesh = GLTFLoader::LoadGLTF("../resource/xbot/xbot.gltf");
     if (oVMesh.has_value())
@@ -97,7 +97,7 @@ bool Window::init(unsigned int width, unsigned int height, const std::string &ti
 
 void Window::mainLoop()
 {
-    mRenderer->uploadBasicMesh(mModel->getVertexData());
+//    mRenderer->uploadBasicMesh(mModel->getVertexData());
     mRenderer->uploadVMesh(*mModelGltf);
     mRenderer->uploadIndexBuffer(*mModelGltf);
 

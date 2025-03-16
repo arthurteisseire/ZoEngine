@@ -28,7 +28,7 @@ private:
 
     GLFWwindow *mWindow = nullptr;
     std::unique_ptr<VkRenderer> mRenderer;
-    std::unique_ptr<CustomCube> mModel;
+//    std::unique_ptr<CustomCube> mModel;
     std::unique_ptr<VMesh> mModelGltf;
     Camera camera;
 };

@@ -447,6 +447,7 @@ void VkRenderer::cleanup()
 
     Texture::cleanup(mRenderData);
     vmaDestroyBuffer(mRenderData.rdAllocator, mVertexBuffer, mVertexBufferAlloc);
+    vmaDestroyBuffer(mRenderData.rdAllocator, mIndexBuffer, mIndexBufferAlloc);
 
     SyncObjects::cleanup(mRenderData);
     CommandBuffer::cleanup(mRenderData, mRenderData.rdCommandBuffer);
